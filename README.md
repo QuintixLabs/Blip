@@ -86,7 +86,8 @@ but you'll need to install **AutoHotkey v2.0** to run it manually.
   </table>
 --->
           
-https://github.com/user-attachments/assets/1b688746-3cb8-46d5-a88a-b3798f407f0b
+https://github.com/user-attachments/assets/71a0f346-05cc-4036-bcb1-67fe7320dfb3
+
 
 
 
