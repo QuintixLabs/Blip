@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+#SingleInstance Force
 
 ;==============================================================
 ; Blip — Quintix
@@ -32,7 +33,7 @@ global shadowShape := "Circle"
 global blockGames := true
 
 ; Version Variables
-global currentVersion := "1.0"
+global currentVersion := "1.1"
 global versionCheckUrl := "https://itsblip.netlify.app/version/version.txt"
 
 ; Save settings in %LOCALAPPDATA%
@@ -241,7 +242,8 @@ CreateShadowFromPool(x, y) {
 SetShapeRegion(guiObj, size, shape) {
     switch shape {
         case "Circle":
-            WinSetRegion("0-0 W" size " H" size " E", guiObj)
+            ; Create smooth circle using polygon approximation
+            CreateSmoothCircleRegion(guiObj, size)
         case "Square":
             WinSetRegion("0-0 W" size " H" size, guiObj)
         case "Hexagon":
@@ -249,6 +251,30 @@ SetShapeRegion(guiObj, size, shape) {
         case "Diamond":
             CreateDiamondRegion(guiObj, size)
     }
+}
+
+; Create smooth circle with many polygon points for anti-aliasing effect
+CreateSmoothCircleRegion(guiObj, size) {
+    centerX := size / 2
+    centerY := size / 2
+    radius := size / 2
+    
+    ; Use 64 points for very smooth edges
+    points := []
+    numPoints := 64
+    
+    Loop numPoints {
+        angle := (A_Index - 1) * (360 / numPoints) * 3.14159265359 / 180
+        x := Round(centerX + radius * Cos(angle))
+        y := Round(centerY + radius * Sin(angle))
+        points.Push(x "-" y)
+    }
+    
+    region := points[1]
+    Loop points.Length - 1
+        region .= " " points[A_Index + 1]
+    
+    WinSetRegion(region, guiObj)
 }
 
 ; Create sum special shapes cuz yeah :D
@@ -365,7 +391,7 @@ OpenSettings(*) {
         return
     }
     
-    settingsGui := Gui("+AlwaysOnTop", "Blip")  ; Added AlwaysOnTop
+    settingsGui := Gui("+AlwaysOnTop", "Blip")
     settingsGui.BackColor := "1A1A1A"
     DllCall("uxtheme\SetWindowTheme", "Ptr", settingsGui.Hwnd, "Str", "DarkMode_Explorer", "Ptr", 0)
     DllCall("dwmapi\DwmSetWindowAttribute", "Ptr", settingsGui.Hwnd, "Int", 20, "Int*", true, "Int", 4)
@@ -389,7 +415,7 @@ OpenSettings(*) {
     global currentSettingsGui := settingsGui
     
     SetShapeRegion(shapePreviewCtrl, 50, shadowShape)
-    WinSetTransparent(maxOpacity, shapePreviewCtrl)
+    WinSetTransparent(Min(255, Max(0, maxOpacity)), shapePreviewCtrl)
     
     shapeDropDown.OnEvent("Change", (*) => RecreateShapePreview(shapeDropDown, maxOpacityEdit))
     
@@ -505,6 +531,7 @@ UpdatePreviewOpacity(maxOpacityEdit) {
     
     try {
         opacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : 255
+        ; Clamp opacity to valid range (0-255)
         opacity := Min(255, Max(0, opacity))
         WinSetTransparent(opacity, shapePreviewCtrl)
     }
@@ -536,7 +563,9 @@ UpdateColorFromHex(colorPreview, colorPreviewBox, maxOpacityEdit, shapeDropDown)
     Sleep(50)
     
     currentShape := shapeDropDown.Text
+    ; Clamp opacity to valid range (0-255)
     opacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : 255
+    opacity := Min(255, Max(0, opacity))
     
     shapePreviewCtrl := currentSettingsGui.Add("Text", "x250 y65 w50 h50 Background" shadowColor)
     shapePreviewCtrls.Push(shapePreviewCtrl)
@@ -561,7 +590,9 @@ RecreateShapePreview(shapeDropDown, maxOpacityEdit) {
     Sleep(50)
     
     currentShape := shapeDropDown.Text
+    ; Clamp opacity to valid range (0-255)
     opacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : 255
+    opacity := Min(255, Max(0, opacity))
     
     shapePreviewCtrl := currentSettingsGui.Add("Text", "x250 y65 w50 h50 Background" shadowColor)
     shapePreviewCtrls.Push(shapePreviewCtrl)
@@ -603,7 +634,9 @@ ChooseColor(colorPreview, colorPreviewBox, previewCtrl, maxOpacityEdit, shapeDro
         Sleep(50)
         
         currentShape := shapeDropDown.Text
+        ; Clamp opacity to valid range (0-255)
         opacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : 255
+        opacity := Min(255, Max(0, opacity))
         
         shapePreviewCtrl := currentSettingsGui.Add("Text", "x250 y65 w50 h50 Background" shadowColor)
         shapePreviewCtrls.Push(shapePreviewCtrl)
@@ -622,6 +655,7 @@ ApplySettings(initialSizeEdit, maxSizeEdit, maxOpacityEdit, expandSpeedEdit, fad
     
     newInitialSize := IsNumber(initialSizeEdit.Value) ? Integer(initialSizeEdit.Value) : initialSize
     newMaxSize := IsNumber(maxSizeEdit.Value) ? Integer(maxSizeEdit.Value) : maxSize
+    newMaxOpacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : maxOpacity
     
     if (newInitialSize > 1000) {
         ShowMsgBox("Initial Size cannot exceed 1000 pixels.", "Invalid Size", "OK 0x30")
@@ -635,9 +669,18 @@ ApplySettings(initialSizeEdit, maxSizeEdit, maxOpacityEdit, expandSpeedEdit, fad
         return
     }
     
+    ; Validate and clamp opacity to 0-255 range
+    if (newMaxOpacity < 0 || newMaxOpacity > 255) {
+        ShowMsgBox("Max Opacity must be between 0 and 255.", "Invalid Opacity", "OK 0x30")
+        maxOpacityEdit.Value := maxOpacity
+        ; Update the preview to show the correct clamped opacity
+        UpdatePreviewOpacity(maxOpacityEdit)
+        return
+    }
+    
     initialSize := newInitialSize
     maxSize := newMaxSize
-    maxOpacity := IsNumber(maxOpacityEdit.Value) ? Integer(maxOpacityEdit.Value) : maxOpacity
+    maxOpacity := newMaxOpacity
     expandSpeed := IsNumber(expandSpeedEdit.Value) ? Integer(expandSpeedEdit.Value) : expandSpeed
     
     fadeStartPercent := IsNumber(fadeStartPercentEdit.Value) ? Round(Float(fadeStartPercentEdit.Value), 2) : fadeStartPercent
@@ -796,7 +839,7 @@ CheckForUpdates(showMessages := false, parentGui?, checkUpdatesBtn?) {
                 if (result = "Yes")
                     Run("https://github.com/fr0st-iwnl/Blip/releases")
             } else if (showMessages) {
-                ShowMsgBox("You have the latest version: " currentVersion, "No Updates Available", "OK 0x40")
+                ShowMsgBox("You have the latest Blip version: " currentVersion, "No Updates Available", "OK 0x40")
             }
         } else if (showMessages) {
             ShowMsgBox("Failed to check for updates (Status: " whr.Status ")", "Update Check Failed", "OK 0x30")
