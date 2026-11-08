@@ -21,12 +21,13 @@ Run it, and the welcome screen lets you pick a shape and a color before you star
 ## ⭐ Features
 
 - 🔘 A soft blip wherever you click, so your clicks are easy to see
+- 🖱️ Left, right and middle click, each with its own color and on/off switch
 - 🎨 Pick the shape (circle, ring, square, hexagon, diamond) and any color
 - 📏 Set the size, opacity, speed and when it fades
-- 🛡️ Stays out of the way on text, links, the taskbar and in games, your choice
-- ⏸️ Pause it anytime from the tray
+- 🛡️ You choose where blips show: text, links, the taskbar and games
+- 🚫 Skip any app or game you pick, and blips won't show there
 - 🌗 Light, dark, or the same as your system
-- 🪶 Low on resources, it waits in your tray until you click
+- 🪶 Low on resources since it's a Tauri app, it waits in your tray until you click
 - *And much more...!*
 
 
