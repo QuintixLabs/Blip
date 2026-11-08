@@ -1,98 +1,54 @@
-<h1 align="center">
-  <a href="http://itsblip.netlify.app" target="_blank"><img src="https://github.com/user-attachments/assets/960908f6-73e6-4abe-800b-3efee1e7f5c7" alt="Blip" width="900"></a>
+<h1 id="start-of-content" align="center">
+  <a href="http://itsblip.netlify.app" target="_blank"><img src="./src/assets/banners/banner-2.png" alt="Blip" width="900"></a>
 </h1>
-<p align="center"><strong>🔘 A lightweight Windows tool that adds smooth shadow blip effects to your clicks.</strong></p>
-
+<p align="center"><strong>🔘 A lightweight tool that adds smooth blip effects to your clicks.</strong></p>
 
 
 <p align="center">
-<a href="#-installation">Installation</a> •
-<a href="#-features">Features</a> •
-  <a href="#-resource-usage">Resource Usage</a> •
-<a href="#-showcase">Showcase</a> 
+<a href="#-installation">📦 Installation</a> •
+<a href="#-features">⭐ Features</a>
+<!--<a href="#-showcase">📸 Showcase</a>-->
 </p>
 
-## 📦 Installation 
+## 📦 Installation
 
 ### 1. Download `🔘 Blip`
-Get the **Setup Installer** from the [Releases Page](https://github.com/QuintixLabs/Blip/releases) and run it.
+Get it from the [Releases Page](https://github.com/QuintixLabs/Blip/releases/latest).
 
-### 2. (Optional) Use the `.ahk` Script
-If you prefer the source code version, download the `.ahk` file from the [Releases Page](https://github.com/QuintixLabs/Blip/releases).
-<br>
-but you'll need to install **AutoHotkey v2.0** to run it manually.
+### 2. Set it up
+Run it, and the welcome screen lets you pick a shape and a color before you start.
 
+## ⭐ Features
 
-
-
-## ✨ Features
-
-<details>
-<summary>🔘 Shadow Settings</summary>
-
-- 🔘 **Shadow Shape**
-  - Circle
-  - Square
-  - Hexagon
-  - Diamond
-- 🔘 **Shadow Color** - Lets you change the shadow color
-- 🔘 **Initial Size** - Lets you change the initial size
-- 🔘 **Max Size** - Lets you change the max size
-- 🔘 **Max Opacity** - Lets you change the max opacity
-- 🔘 **Expand Speed** - Lets you change the expand speed
-- 🔘 **Fade Start %** - Lets you change the fade start `%`
+- 🔘 A soft blip wherever you click, so your clicks are easy to see
+- 🎨 Pick the shape (circle, ring, square, hexagon, diamond) and any color
+- 📏 Set the size, opacity, speed and when it fades
+- 🛡️ Stays out of the way on text, links, the taskbar and in games, your choice
+- ⏸️ Pause it anytime from the tray
+- 🌗 Light, dark, or the same as your system
+- 🪶 Low on resources, it waits in your tray until you click
+- *And much more...!*
 
 
-</details>
-
-<details>
-<summary>🛡️ Shadow Blocking</summary>
-<br>
-
-- 🕸️ **Block on Text Cursor (I-beam)**
-- 🕸️ **Block on Link Cursor (Hand)**
-- 🕸️ **Block shadows on Taskbar**
-- 🕸️ **Block shadows in Games**
-
-</details>
-
-<details>
-<summary>🪶 General</summary>
-  
-- 🪟 **Run on Windows startup**
-
-</details>
-
-## 📊 Resource Usage
-
-### Blip is a lightweight tool, using only 4.9 MB of memory.
-
-<img width="721" height="31" alt="image" src="https://github.com/user-attachments/assets/ae750bd8-0aa6-4782-a3b5-cb443ee85a13" />
-
-
-
-
-
-
-
+<!--
 ## 📸 Showcase
+-->
+
 <!---
-<table>
-    <tr>
-      <td>
-        <p align="left"><b><em>[❗]</b> This showcase uses <b>Version 1.6</b>, so some things may be different now.</em></p>
-      </td>
-    </tr>
-  </table>
---->
-          
 https://github.com/user-attachments/assets/71a0f346-05cc-4036-bcb1-67fe7320dfb3
+-->
 
 
 
+## 📄 License
+[![GNU GPLv3 Image](https://www.gnu.org/graphics/gplv3-127x51.png)](http://www.gnu.org/licenses/gpl-3.0.en.html)
 
+Blip is [Free Software](https://en.wikipedia.org/wiki/Free_software): You can use, study, share and modify it at your will. The app can be redistributed and/or modified under the terms of the
+[GNU General Public License version 3](https://www.gnu.org/licenses/gpl.html) published by the
+[Free Software Foundation](https://www.fsf.org/).
 
-
-## 🤝 Contributions 
-
-Feel free to fork this repository and submit pull requests. Contributions to improve functionality, documentation, or adding features are welcome. For guidelines, please refer to the [CONTRIBUTING.md](https://github.com/QuintixLabs/Blip/blob/master/CONTRIBUTING.md).
+<div align="right">
+<table><td>
+<a href="#start-of-content">↥ Scroll to top</a>
+</td></table>
+</div>

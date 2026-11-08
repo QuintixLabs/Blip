@@ -1,0 +1,108 @@
+// ============================================================
+// commands.rs
+// Everything the window can ask the app to do: save settings,
+// check for updates, open a link, and so on.
+// ============================================================
+
+// Anything that touches windows is async: plain commands run on the UI
+// thread, and doing that work there can freeze the app on Windows.
+
+use tauri::{AppHandle, State};
+
+use crate::{
+    app::{
+        settings::{self, Data, Settings, Store},
+        updates,
+    },
+    blip,
+    system::startup,
+    ui::main_window,
+};
+
+// ------------------------------------------------------------
+// Settings
+// ------------------------------------------------------------
+
+#[tauri::command]
+pub fn state(store: State<Store>) -> Data {
+    store.get()
+}
+
+#[tauri::command]
+pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Settings) -> Result<Data, String> {
+    let previous = store.get().settings;
+    if settings.start_with_computer != previous.start_with_computer {
+        startup::set(&app, settings.start_with_computer)?;
+    }
+    if settings.theme != previous.theme {
+        main_window::apply_theme(&app, &settings.theme);
+    }
+    let data = store.update(&app, |data| data.settings = settings);
+    blip::apply(&data.settings);
+    Ok(data)
+}
+
+/// "Reset all settings": back to the defaults, keeping the welcome screen done.
+#[tauri::command]
+pub async fn reset_settings(app: AppHandle, store: State<'_, Store>) -> Result<Data, String> {
+    let settings = Settings { show_welcome: false, ..Settings::default() };
+    save_settings(app, store, settings).await
+}
+
+/// None when blips work on this system; otherwise why not, for the window to show.
+#[tauri::command]
+pub fn blip_status() -> Option<String> {
+    blip::unsupported_reason()
+}
+
+// ------------------------------------------------------------
+// Updates
+// ------------------------------------------------------------
+
+#[tauri::command]
+pub async fn check_update(app: AppHandle) -> Result<Option<String>, String> {
+    updates::check(&app).await
+}
+
+#[tauri::command]
+pub async fn install_update(app: AppHandle) -> Result<(), String> {
+    updates::install(&app).await
+}
+
+/// Version of a downloaded update waiting to install, if any.
+#[tauri::command]
+pub async fn pending_update(app: AppHandle) -> Option<String> {
+    updates::ready_version(&app)
+}
+
+// ------------------------------------------------------------
+// Links and folders
+// ------------------------------------------------------------
+
+/// Footer links. Only these addresses can be opened from the window.
+const LINKS: [(&str, &str); 3] = [
+    ("github", "https://github.com/QuintixLabs/Blip"),
+    ("website", "https://itsblip.netlify.app"),
+    ("kofi", "https://ko-fi.com/fr0stiwnl"),
+];
+
+#[tauri::command]
+pub async fn open_link(app: AppHandle, name: String) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let (_, url) = LINKS.iter().find(|(key, _)| *key == name).ok_or("unknown link")?;
+    app.opener().open_url(*url, None::<&str>).map_err(|e| e.to_string())
+}
+
+/// "Open settings folder": shows blip.json in the file manager.
+#[tauri::command]
+pub async fn open_settings_folder(app: AppHandle) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    let dir = settings::settings_dir(&app);
+    let file = dir.join("blip.json");
+    if file.exists() {
+        app.opener().reveal_item_in_dir(&file).map_err(|e| e.to_string())
+    } else {
+        std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+        app.opener().open_path(dir.to_string_lossy(), None::<&str>).map_err(|e| e.to_string())
+    }
+}

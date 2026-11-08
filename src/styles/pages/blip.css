@@ -1,0 +1,30 @@
+/* ============================================================
+   blip.css
+   The Blip page, plus the note shown when blips can't work on this
+   system (also on the welcome screen).
+   ============================================================ */
+
+.try-wide {
+  height: 120px;
+  margin: 4px 0 6px;
+}
+
+/* Wider sliders here than on the welcome screen. */
+#blip .slider input {
+  width: 200px;
+}
+
+.notice {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid color-mix(in srgb, var(--warning) 40%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--warning) 10%, transparent);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.notice[hidden] {
+  display: none;
+}

@@ -1,0 +1,279 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Blip</title>
+    <link rel="stylesheet" href="styles/base/theme.css" />
+    <link rel="stylesheet" href="styles/base/reset.css" />
+    <link rel="stylesheet" href="styles/base/icons.css" />
+    <link rel="stylesheet" href="styles/base/layout.css" />
+    <link rel="stylesheet" href="styles/components/buttons.css" />
+    <link rel="stylesheet" href="styles/components/controls.css" />
+    <link rel="stylesheet" href="styles/components/look-controls.css" />
+    <link rel="stylesheet" href="styles/components/sidebar.css" />
+    <link rel="stylesheet" href="styles/components/update-bar.css" />
+    <link rel="stylesheet" href="styles/components/dialog.css" />
+    <link rel="stylesheet" href="styles/pages/welcome.css" />
+    <link rel="stylesheet" href="styles/pages/blip.css" />
+    <link rel="stylesheet" href="styles/pages/settings.css" />
+    <script src="js/shared/boot.js"></script>
+    <script type="module" src="js/app/app.js"></script>
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <img class="logo" src="assets/logos/logo.svg" alt="" />
+        <span class="label-text">Blip</span>
+        <button id="sidebar-toggle" class="sidebar-toggle">
+          <i class="icon icon-panel-close"></i>
+          <i class="icon icon-panel-open"></i>
+        </button>
+      </div>
+      <nav class="nav">
+        <button data-tab="blip" title="Blip"><i class="icon icon-click"></i><span class="label-text">Blip</span></button>
+        <button data-tab="settings" title="Settings"><i class="icon icon-settings"></i><span class="label-text">Settings</span></button>
+      </nav>
+      <div class="sidebar-foot">
+        <button id="pause" class="btn btn-muted pick" title="Pause blips">
+          <i class="icon icon-pause"></i><i class="icon icon-play"></i><span class="label-text">Pause blips</span>
+        </button>
+        <span id="pause-state" class="pause-state"></span>
+      </div>
+    </aside>
+
+    <main>
+      <div id="update-bar" class="update-bar-wrap">
+        <div class="update-bar-inner">
+          <div class="update-bar">
+            <span class="update-bar-dot"></span>
+            <span id="update-bar-text" class="update-bar-text"></span>
+            <button id="update-restart" class="btn btn-muted btn-sm">Restart</button>
+            <button id="update-later" class="btn btn-ghost btn-sm">Later</button>
+          </div>
+        </div>
+      </div>
+
+      <section id="welcome" class="view welcome is-intro" hidden>
+        <div class="stage">
+          <div class="step" data-step="0">
+            <div class="step-icon"><img class="logo" src="assets/logos/logo.svg" alt="" /></div>
+            <h1>Welcome to Blip</h1>
+            <p class="lead">A soft blip wherever you click, so your clicks are easy to see.</p>
+            <p class="notice" data-unsupported hidden></p>
+          </div>
+
+          <div class="step" data-step="1" hidden>
+            <div class="step-icon badge"><i class="icon icon-click"></i></div>
+            <h1>Make it yours</h1>
+            <p class="lead">Pick a shape and a color. You can change more in Blip later.</p>
+            <div class="step-body">
+              <div class="group">
+                <div class="row">
+                  <div class="row-title">Shape</div>
+                  <div class="segmented shapes" data-shapes></div>
+                </div>
+                <div class="row">
+                  <div class="row-title">Color</div>
+                  <div class="swatches" data-colors></div>
+                </div>
+              </div>
+              <button class="try" type="button">Click here to try it</button>
+            </div>
+          </div>
+
+          <div class="step" data-step="2" hidden>
+            <div class="step-icon badge"><i class="icon icon-check"></i></div>
+            <h1>You're all set</h1>
+            <p class="lead">Blip runs in your tray. Click its icon anytime to change things.</p>
+            <div class="step-body">
+              <div class="group">
+                <div class="row">
+                  <div>
+                    <div class="row-title">Start with computer</div>
+                    <div class="row-hint">So your clicks always get a blip</div>
+                  </div>
+                  <button class="toggle" role="switch" data-field="startWithComputer"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button id="back" class="btn btn-muted">Back</button>
+          <button id="next" class="btn btn-accent">Get started</button>
+        </div>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </section>
+
+      <section id="blip" class="view" hidden>
+        <header class="page-head">
+          <h2>Blip</h2>
+        </header>
+        <p class="notice" data-unsupported hidden></p>
+
+        <button class="try try-wide" type="button">Click here to try it</button>
+
+        <h3 class="section">Look</h3>
+        <div class="group">
+          <div class="row">
+            <div class="row-title">Shape</div>
+            <div class="segmented shapes" data-shapes></div>
+          </div>
+          <div class="row">
+            <div class="row-title">Color</div>
+            <div class="swatches" data-colors></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Opacity</div>
+              <div class="row-hint">How strong it starts</div>
+            </div>
+            <div class="slider"><input type="range" data-field="opacity" min="5" max="100" step="5" /><output data-unit="%"></output></div>
+          </div>
+        </div>
+
+        <h3 class="section">Size and speed</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Start size</div>
+              <div class="row-hint">How big it is when it appears</div>
+            </div>
+            <div class="slider"><input type="range" data-field="startSize" min="2" max="150" step="1" /><output data-unit=" px"></output></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">End size</div>
+              <div class="row-hint">How big it grows</div>
+            </div>
+            <div class="slider"><input type="range" data-field="endSize" min="2" max="200" step="1" /><output data-unit=" px"></output></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Speed</div>
+              <div class="row-hint">How quickly it grows and fades</div>
+            </div>
+            <div class="slider"><input type="range" data-field="speed" min="1" max="10" step="1" /><output></output></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Fade starts</div>
+              <div class="row-hint">How far through it starts fading out</div>
+            </div>
+            <div class="slider"><input type="range" data-field="fadeStart" min="0" max="90" step="5" /><output data-unit="%"></output></div>
+          </div>
+        </div>
+
+        <h3 class="section">Don't show blips</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">On text</div>
+              <div class="row-hint">When the text cursor is showing, like when you type or select</div>
+            </div>
+            <button class="toggle" role="switch" data-field="skipTextCursor"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">On links</div>
+              <div class="row-hint">When the hand cursor is showing</div>
+            </div>
+            <button class="toggle" role="switch" data-field="skipLinkCursor"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">On the taskbar</div>
+              <div class="row-hint">Clicks on the taskbar and its icons</div>
+            </div>
+            <button class="toggle" role="switch" data-field="skipTaskbar"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">In games</div>
+              <div class="row-hint">When a game hides or holds the cursor, or runs full screen</div>
+            </div>
+            <button class="toggle" role="switch" data-field="skipGames"></button>
+          </div>
+        </div>
+      </section>
+
+      <section id="settings" class="view" hidden>
+        <header class="page-head">
+          <h2>Settings</h2>
+        </header>
+
+        <h3 class="section">General</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Theme</div>
+              <div class="row-hint">Light, dark, or the same as your system</div>
+            </div>
+            <div class="segmented segmented-icons" data-field="theme" data-kind="icons" data-options="system:monitor:System,light:light:Light,dark:dark:Dark"></div>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Start with computer</div>
+              <div class="row-hint">Start Blip in the tray when your computer starts</div>
+            </div>
+            <button class="toggle" role="switch" data-field="startWithComputer"></button>
+          </div>
+        </div>
+
+        <h3 class="section">Updates</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Update automatically</div>
+              <div class="row-hint">Install new versions when Blip's window is closed</div>
+            </div>
+            <button class="toggle" role="switch" data-field="autoUpdate"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Blip</div>
+              <div id="version" class="row-hint"></div>
+            </div>
+            <button id="update" class="btn btn-muted update" data-state="idle">
+              <span class="update-content">
+                <svg class="update-spinner" viewBox="0 0 24 24" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M12 3c4.97 0 9 4.03 9 9"/><path d="M12 3c4.97 0 9 4.03 9 9c0 4.97 -4.03 9 -9 9c-4.97 0 -9 -4.03 -9 -9c0 -4.97 4.03 -9 9 -9Z" opacity="0.3"/></g></svg>
+                <i class="icon icon-check update-done"></i>
+                <span class="update-text">Check for updates</span>
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <p class="status footer-status"></p>
+        <div class="footer">
+          <button id="open-folder" class="btn btn-ghost"><i class="icon icon-folder"></i>Open settings folder</button>
+          <button id="reset" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset all settings</button>
+        </div>
+
+        <footer class="app-footer">
+          <div class="about">
+            <i class="icon icon-quintix"></i>
+            <span>Quintix</span>
+          </div>
+          <div class="footer-links">
+            <button class="icon-btn" data-link="github" title="GitHub"><i class="icon icon-github"></i></button>
+            <button class="icon-btn" data-link="website" title="Website"><i class="icon icon-globe"></i></button>
+            <button class="icon-btn" data-link="kofi" title="Support on Ko-fi"><i class="icon icon-kofi"></i></button>
+          </div>
+        </footer>
+      </section>
+    </main>
+
+    <dialog id="confirm" class="dialog">
+      <form method="dialog">
+        <p id="confirm-title" class="dialog-title"></p>
+        <p id="confirm-text" class="dialog-text"></p>
+        <div class="dialog-actions">
+          <button value="ok" id="confirm-ok" class="btn btn-danger"></button>
+          <button value="cancel" class="btn btn-muted">Cancel</button>
+        </div>
+      </form>
+    </dialog>
+  </body>
+</html>

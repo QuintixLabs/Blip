@@ -1,0 +1,16 @@
+{
+  "name": "blip",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Lightweight tool that adds smooth blip effects to your clicks",
+  "license": "GPL-3.0",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "tauri dev",
+    "build": "tauri build",
+    "version": "node scripts/sync-version.mjs && git add src-tauri/Cargo.toml src-tauri/Cargo.lock"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Blip",
+  "version": "../package.json",
+  "identifier": "com.quintixlabs.blip",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "macOSPrivateApi": true,
+    "windows": [],
+    "security": {
+      "csp": "default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src ipc: http://ipc.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis", "dmg", "app", "appimage", "deb", "rpm"],
+    "createUpdaterArtifacts": true,
+    "licenseFile": "../LICENSE",
+    "publisher": "Quintix Labs",
+    "copyright": "Copyright © Quintix Labs",
+    "shortDescription": "Lightweight tool that adds smooth blip effects to your clicks",
+    "icon": [
+      "icons/app/32x32.png",
+      "icons/app/128x128.png",
+      "icons/app/128x128@2x.png",
+      "icons/app/icon.icns",
+      "icons/app/icon.ico"
+    ],
+    "windows": {
+      "nsis": {
+        "installerIcon": "icons/app/icon.ico",
+        "uninstallerIcon": "icons/app/icon.ico",
+        "installerHooks": "installer/hooks.nsh",
+        "languages": ["English"],
+        "customLanguageFiles": { "English": "installer/English.nsh" }
+      }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU2RTBDMTIxODQzNUVBMTcKUldRWDZqV0VJY0hnNW9qNGh2RnNteWs1SU5INjVxMDEyZHhzZHNmSjgrM04xS05Wd3M3S3Q2UmEK",
+      "endpoints": [
+        "https://github.com/QuintixLabs/Blip-Testing/releases/latest/download/latest.json"
+      ],
+      "windows": {
+        "installMode": "quiet"
+      }
+    }
+  }
+}
