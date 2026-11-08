@@ -1,5 +1,5 @@
 // ============================================================
-// access.rs
+// linux/wayland/access.rs
 // On Wayland, Blip reads clicks straight from the mice and
 // touchpads (/dev/input). Linux only lets the person at the computer
 // do that when a small rule says so. The .deb and .rpm install the
@@ -10,7 +10,7 @@
 use std::{fs, path::Path, process::Command};
 
 /// The rule itself, shared with the .deb and .rpm.
-const RULE: &str = include_str!("../../../installer/linux/70-blip.rules");
+const RULE: &str = include_str!("../../../../installer/linux/70-blip.rules");
 
 const RULE_FILE: &str = "/etc/udev/rules.d/70-blip.rules";
 

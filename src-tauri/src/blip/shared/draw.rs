@@ -1,5 +1,5 @@
 // ============================================================
-// draw.rs
+// shared/draw.rs
 // Draws one frame of a blip with smooth edges, the same on every
 // system. Each system's overlay then puts the picture on screen.
 // ============================================================

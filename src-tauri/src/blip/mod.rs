@@ -5,15 +5,13 @@
 // ============================================================
 
 // How it's split up:
-//   style.rs     what a blip looks like and how it moves
-//   draw.rs      draws one frame of a blip (the same on every system)
-//   windows.rs   Windows: watching clicks, the rules, putting blips on screen
-//   linux/       Linux: X11, and Wayland on KDE Plasma and Hyprland
-//   macos.rs     macOS: watching clicks, the rules, putting blips on screen
-//   other.rs     systems Blip can't draw on
+//   shared/        what every system uses: how a blip looks and moves, drawing it
+//   windows/       Windows: watching clicks, the rules, putting blips on screen
+//   linux/         Linux: X11, and Wayland on KDE Plasma and Hyprland
+//   macos/         macOS: watching clicks, the rules, putting blips on screen
+//   unsupported.rs systems Blip can't show blips on (it says why)
 
-mod draw;
-mod style;
+mod shared;
 
 #[cfg(windows)]
 mod windows;
@@ -31,9 +29,9 @@ mod macos;
 use macos as platform;
 
 #[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
-mod other;
+mod unsupported;
 #[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
-use other as platform;
+use unsupported as platform;
 
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -43,7 +41,7 @@ use std::sync::{
 use serde::Serialize;
 
 use crate::app::settings::{parse_hex, Settings};
-use style::Style;
+use shared::style::Style;
 
 /// Which "Show on" rules this system can check. The window hides the others.
 #[derive(Clone, Copy, Serialize)]

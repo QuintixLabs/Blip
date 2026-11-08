@@ -1,5 +1,5 @@
 // ============================================================
-// other.rs
+// unsupported.rs
 // Systems Blip can't show blips on yet. The app still runs (window,
 // settings, updates), and the window says why there are no blips.
 // ============================================================

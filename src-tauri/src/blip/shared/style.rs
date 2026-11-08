@@ -1,5 +1,5 @@
 // ============================================================
-// style.rs
+// shared/style.rs
 // What a blip looks like and how it moves: it grows from the start
 // size to the end size, slowing down as it goes, and fades out.
 // ============================================================

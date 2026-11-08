@@ -7,15 +7,10 @@
 // ============================================================
 
 // How it's split up:
-//   x11.rs        X11: watching clicks, the rules, drawing blips
-//   mice.rs       Wayland: reading clicks from the mice and touchpads
-//   access.rs     Wayland: the permission to read them (the Allow button)
-//   cursor.rs     Wayland: asking KDE or Hyprland where the cursor is
-//   wayland.rs    Wayland: drawing blips on top of everything
+//   x11/       X11: watching clicks, the rules, drawing blips
+//   wayland/   Wayland: reading the mice, asking KDE or Hyprland where the
+//              cursor is, the Allow button, drawing blips on top of everything
 
-mod access;
-mod cursor;
-mod mice;
 mod wayland;
 mod x11;
 
@@ -54,8 +49,8 @@ fn session() -> Session {
 pub fn start() {
     match session() {
         Session::X11 => x11::start(),
-        Session::Kde => wayland::start(cursor::Source::Kde),
-        Session::Hyprland => wayland::start(cursor::Source::Hyprland),
+        Session::Kde => wayland::start(wayland::Source::Kde),
+        Session::Hyprland => wayland::start(wayland::Source::Hyprland),
         _ => {}
     }
 }
@@ -90,7 +85,7 @@ pub fn features() -> Features {
 }
 
 pub fn needs_access() -> bool {
-    matches!(session(), Session::Kde | Session::Hyprland) && access::needed()
+    matches!(session(), Session::Kde | Session::Hyprland) && wayland::access::needed()
 }
 
 pub fn access_prompt() -> super::AccessPrompt {
@@ -102,7 +97,7 @@ pub fn access_prompt() -> super::AccessPrompt {
 }
 
 pub fn allow_access() -> Result<(), String> {
-    access::allow()
+    wayland::access::allow()
 }
 
 /// The file name of the program with this process id, lowercase ("firefox").

@@ -1,5 +1,5 @@
 // ============================================================
-// mice.rs
+// linux/wayland/mice.rs
 // Wayland: reads the mouse buttons straight from the mice and
 // touchpads (/dev/input), since Wayland doesn't tell apps about
 // clicks outside their own windows. Mice plugged in later are
@@ -29,11 +29,7 @@ pub enum Input {
 
 fn event_files() -> Vec<PathBuf> {
     let Ok(entries) = std::fs::read_dir("/dev/input") else { return Vec::new() };
-    entries
-        .flatten()
-        .map(|e| e.path())
-        .filter(|p| p.file_name().is_some_and(|n| n.to_string_lossy().starts_with("event")))
-        .collect()
+    entries.flatten().map(|e| e.path()).filter(|p| p.file_name().is_some_and(|n| n.to_string_lossy().starts_with("event"))).collect()
 }
 
 /// Has a left button: a mouse, touchpad or trackball.

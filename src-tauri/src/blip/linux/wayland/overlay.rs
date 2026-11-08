@@ -1,20 +1,12 @@
 // ============================================================
-// wayland.rs
-// Wayland (KDE Plasma, Hyprland): turns the mouse buttons from
-// mice.rs into blips. On release it asks the desktop where the
-// cursor is (cursor.rs), checks the rules, and shows the blip as a
-// small surface above everything that clicks pass through.
+// linux/wayland/overlay.rs
+// Wayland: each blip is a small surface on the layer above everything
+// (the layer shell), with no input area, so clicks go straight through.
 // ============================================================
-
-// Two threads:
-//   clicks  reads the mice, tells clicks from drags, asks where the cursor is
-//   blips   talks to the compositor: one small overlay surface per blip,
-//           redrawn every few milliseconds until it's done
 
 use std::{
     os::fd::AsRawFd,
-    sync::mpsc::{self, Receiver, TryRecvError},
-    thread,
+    sync::mpsc::{Receiver, TryRecvError},
     time::Instant,
 };
 
@@ -37,83 +29,7 @@ use wayland_client::{
     Connection, QueueHandle,
 };
 
-use super::{
-    cursor::{Finder, Source},
-    mice::{self, Input},
-};
-use crate::blip::{draw, style::Style, Button};
-
-/// Moving further than this (in the mouse's own units) while a button is down
-/// is a drag, not a click: no blip.
-const DRAG: i64 = 60;
-
-/// BLIP_DEBUG=1 prints every click, for testing.
-fn debug() -> bool {
-    std::env::var_os("BLIP_DEBUG").is_some()
-}
-
-pub fn start(source: Source) {
-    let (blips_tx, blips_rx) = mpsc::channel();
-    thread::Builder::new()
-        .name("blips".into())
-        .spawn(move || {
-            if run_overlay(blips_rx).is_none() {
-                eprintln!("Blip: couldn't draw over the screen (no layer shell)");
-            }
-        })
-        .ok();
-    thread::Builder::new()
-        .name("clicks".into())
-        .spawn(move || {
-            let Some(finder) = Finder::new(source) else {
-                eprintln!("Blip: couldn't ask the desktop where the cursor is");
-                return;
-            };
-            let (input_tx, input_rx) = mpsc::channel();
-            mice::watch(input_tx);
-            watch_clicks(&finder, input_rx, |x, y, button| {
-                let _ = blips_tx.send((x, y, button));
-            });
-        })
-        .ok();
-}
-
-// ------------------------------------------------------------
-// Clicks
-// ------------------------------------------------------------
-
-fn watch_clicks(finder: &Finder, input: Receiver<Input>, play: impl Fn(f64, f64, Button)) {
-    // How far each button has moved since it went down; None while it's up.
-    let mut held: [Option<(i64, i64)>; 3] = [None; 3];
-    for event in input {
-        match event {
-            Input::Press(button) => held[button as usize] = Some((0, 0)),
-            Input::Moved(dx, dy) => {
-                for moved in held.iter_mut().flatten() {
-                    moved.0 += dx as i64;
-                    moved.1 += dy as i64;
-                }
-            }
-            Input::Release(button) => {
-                let Some((dx, dy)) = held[button as usize].take() else { continue };
-                if dx * dx + dy * dy > DRAG * DRAG || !crate::blip::active() || crate::blip::style_for(button).is_none() {
-                    continue;
-                }
-                let Some(pointer) = finder.find() else { continue };
-                if debug() {
-                    eprintln!("Blip: click at {}, {} (pid {}, app {:?}, panel {})", pointer.x, pointer.y, pointer.pid, pointer.app, pointer.panel);
-                }
-                if crate::blip::rules().taskbar && pointer.panel {
-                    continue;
-                }
-                if pointer.pid != 0 && super::skipped_app(pointer.pid, &pointer.app) {
-                    continue;
-                }
-                play(pointer.x, pointer.y, button);
-            }
-        }
-    }
-}
+use crate::blip::{shared::draw, shared::style::Style, Button};
 
 // ------------------------------------------------------------
 // Drawing
@@ -140,7 +56,7 @@ struct Blip {
     pixmap: Pixmap,
 }
 
-fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
+pub(super) fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
     let conn = Connection::connect_to_env().ok()?;
     let (globals, mut queue) = registry_queue_init::<Overlay>(&conn).ok()?;
     let qh = queue.handle();
