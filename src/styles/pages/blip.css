@@ -105,9 +105,18 @@
   height: 20px;
 }
 
-/* A button that's switched off: its colors fade back until it's on again. */
-.button-row:has(.toggle[aria-checked="false"]) .swatches {
+/* A button that's switched off: its colors fade back and can't be picked
+   until it's on again (controls/colors.js makes them inert). */
+.button-row .swatches {
+  transition: opacity 200ms var(--ease);
+}
+
+.button-row .swatches[inert] {
   opacity: 0.4;
+}
+
+.button-row .swatches[inert] .swatch:hover {
+  transform: none;
 }
 
 /* ------------------------------------------------------------

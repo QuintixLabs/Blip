@@ -21,8 +21,13 @@ const PRESETS = [
 
 const sameColor = (a, b) => a.toUpperCase() === b.toUpperCase();
 
+/** Each color's on/off switch (Blip page, Mouse buttons). */
+const SWITCH = { color: 'leftClick', rightColor: 'rightClick', middleColor: 'middleClick' };
+
 function render(state) {
   for (const el of $$('[data-colors]')) {
+    // A button that's switched off: its colors can't be picked (they're faded too).
+    if (el.closest('.button-row')) el.inert = !state.settings[SWITCH[el.dataset.colors]];
     const current = state.settings[el.dataset.colors];
     const custom = !PRESETS.some(([hex]) => sameColor(hex, current));
     const swatches = PRESETS.map(([hex, name]) => {
