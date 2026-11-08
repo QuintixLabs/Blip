@@ -97,10 +97,20 @@ pub async fn browse_app(app: AppHandle) -> Option<apps::AppInfo> {
     tauri::async_runtime::spawn_blocking(move || apps::info_for(&path)).await.ok()
 }
 
-/// None when blips work on this system; otherwise why not, for the window to show.
+/// Whether blips work on this system, and which "Show on" rules it can check.
 #[tauri::command]
-pub fn blip_status() -> Option<String> {
-    blip::unsupported_reason()
+pub async fn blip_info() -> blip::Info {
+    tauri::async_runtime::spawn_blocking(blip::info).await.unwrap_or(blip::Info {
+        reason: None,
+        needs_access: false,
+        features: blip::Features { text: true, links: true, taskbar: true, games: true, apps: true },
+    })
+}
+
+/// The Allow button (Linux on Wayland): the system asks for your password once.
+#[tauri::command]
+pub async fn blip_allow_access() -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(blip::allow_access).await.map_err(|e| e.to_string())?
 }
 
 // ------------------------------------------------------------

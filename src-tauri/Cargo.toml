@@ -50,3 +50,13 @@ windows = { version = "0.62.2", features = [
 [target."cfg(not(windows))".dependencies]
 dark-light = "3.0.0"
 notify-rust = "4.18.2"
+
+# Blips on Linux: X11, and Wayland (reading the mice, asking the desktop
+# where the cursor is, drawing through the layer shell).
+[target.'cfg(target_os = "linux")'.dependencies]
+evdev = "0.13"
+x11rb = { version = "0.13", features = ["xinput", "xfixes", "shape"] }
+smithay-client-toolkit = { version = "0.19", default-features = false }
+wayland-client = "0.31"
+zbus = "5"
+libc = "0.2"

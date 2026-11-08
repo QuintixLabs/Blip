@@ -172,23 +172,23 @@
           </div>
         </div>
 
-        <h3 class="section">Show on</h3>
-        <div class="group">
-          <div class="row">
+        <h3 class="section" data-feature-section>Show on</h3>
+        <div class="group" data-feature-section>
+          <div class="row" data-feature="text">
             <div>
               <div class="row-title">Text</div>
               <div class="row-hint">Text you type or select</div>
             </div>
             <button class="toggle" role="switch" data-field="skipTextCursor" data-invert></button>
           </div>
-          <div class="row">
+          <div class="row" data-feature="links">
             <div>
               <div class="row-title">Links</div>
               <div class="row-hint">Things with a hand cursor</div>
             </div>
             <button class="toggle" role="switch" data-field="skipLinkCursor" data-invert></button>
           </div>
-          <div class="row row-with-warning">
+          <div class="row row-with-warning" data-feature="taskbar">
             <div>
               <div class="row-title">Taskbar</div>
               <div class="row-hint">Taskbar and Start menu</div>
@@ -196,21 +196,21 @@
             </div>
             <button class="toggle" role="switch" data-field="skipTaskbar" data-invert></button>
           </div>
-          <div class="row">
+          <div class="row" data-feature="games">
             <div>
               <div class="row-title">Games</div>
               <div class="row-hint">Inside games</div>
             </div>
             <button class="toggle" role="switch" data-field="skipGames" data-invert></button>
           </div>
-          <div class="row apps-row">
+          <div class="row apps-row" data-feature="apps">
             <div>
               <div class="row-title">Apps</div>
               <div class="row-hint">Blips show in every app except these</div>
             </div>
             <button id="choose-apps" class="btn btn-muted btn-sm">Choose apps</button>
           </div>
-          <div class="app-chips" id="app-chips" hidden></div>
+          <div class="app-chips" id="app-chips" data-feature="apps" hidden></div>
         </div>
         <div class="footer">
           <span></span>

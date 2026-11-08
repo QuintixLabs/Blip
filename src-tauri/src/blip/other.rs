@@ -9,3 +9,15 @@ pub fn start() {}
 pub fn unsupported_reason() -> Option<String> {
     Some("Blips don't work on this system yet. They're coming in a later version.".into())
 }
+
+pub fn features() -> super::Features {
+    super::Features { text: false, links: false, taskbar: false, games: false, apps: false }
+}
+
+pub fn needs_access() -> bool {
+    false
+}
+
+pub fn allow_access() -> Result<(), String> {
+    Ok(())
+}

@@ -8,7 +8,8 @@
 //   style.rs     what a blip looks like and how it moves
 //   draw.rs      draws one frame of a blip (the same on every system)
 //   windows.rs   Windows: watching clicks, the rules, putting blips on screen
-//   other.rs     systems Blip can't draw on yet
+//   linux/       Linux: X11, and Wayland on KDE Plasma and Hyprland
+//   other.rs     systems Blip can't draw on yet (macOS for now)
 
 mod draw;
 mod style;
@@ -18,9 +19,14 @@ mod windows;
 #[cfg(windows)]
 use windows as platform;
 
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
+mod linux;
+#[cfg(target_os = "linux")]
+use linux as platform;
+
+#[cfg(not(any(windows, target_os = "linux")))]
 mod other;
-#[cfg(not(windows))]
+#[cfg(not(any(windows, target_os = "linux")))]
 use other as platform;
 
 use std::sync::{
@@ -28,8 +34,32 @@ use std::sync::{
     OnceLock, RwLock,
 };
 
+use serde::Serialize;
+
 use crate::app::settings::{parse_hex, Settings};
 use style::Style;
+
+/// Which "Show on" rules this system can check. The window hides the others.
+#[derive(Clone, Copy, Serialize)]
+pub struct Features {
+    pub text: bool,
+    pub links: bool,
+    pub taskbar: bool,
+    pub games: bool,
+    pub apps: bool,
+}
+
+/// What the window needs to know about blips here.
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Info {
+    /// Why blips can't show on this system, if they can't.
+    pub reason: Option<String>,
+    /// Blips work here once Blip may read the mouse (Linux on Wayland); the
+    /// window shows an Allow button.
+    pub needs_access: bool,
+    pub features: Features,
+}
 
 /// When a click shouldn't get a blip.
 #[derive(Clone, Copy)]
@@ -108,9 +138,14 @@ pub fn apply(settings: &Settings) {
     live.active.store(!settings.show_welcome, Ordering::Relaxed);
 }
 
-/// None when blips work here; otherwise why not, in plain words (shown in the window).
-pub fn unsupported_reason() -> Option<String> {
-    platform::unsupported_reason()
+/// For the window: whether blips work here, and which rules can be checked.
+pub fn info() -> Info {
+    Info { reason: platform::unsupported_reason(), needs_access: platform::needs_access(), features: platform::features() }
+}
+
+/// The Allow button: lets Blip read the mouse (Linux on Wayland).
+pub fn allow_access() -> Result<(), String> {
+    platform::allow_access()
 }
 
 /// The blip for a click with that button, in that button's color; None when that button is off.

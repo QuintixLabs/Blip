@@ -31,6 +31,25 @@
   display: none;
 }
 
+/* With the Allow button: the text, then the button on the right. */
+.notice-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 14px;
+}
+
+.notice-action > span:first-child {
+  flex: 1 1 260px;
+}
+
+.notice-error {
+  flex-basis: 100%;
+  color: var(--danger);
+  font-size: 12px;
+}
+
 /* ------------------------------------------------------------
    Mouse buttons: name and icon, then that button's colors and switch
    ------------------------------------------------------------ */

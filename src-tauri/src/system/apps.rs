@@ -21,7 +21,7 @@ pub struct AppInfo {
 
 pub use platform::{all, info_for};
 
-/// File name of a path, lowercase ("C:\\…\\Code.exe" → "code.exe").
+/// File name of a path, lowercase ("C:\\…\\Code.exe" → "code.exe", "/usr/bin/firefox" → "firefox").
 fn exe_name(path: &str) -> String {
     path.rsplit(['\\', '/']).next().unwrap_or(path).to_lowercase()
 }
@@ -69,7 +69,7 @@ mod platform {
         },
     };
 
-    use super::{exe_name, plain_name, AppInfo};
+    use super::{base64, exe_name, plain_name, AppInfo};
 
     /// Size the icons are read at: sharp at up to 200 % scaling in the list.
     const ICON_PX: u32 = 48;
@@ -539,26 +539,178 @@ mod platform {
         }
         pixmap.encode_png().ok()
     }
+}
 
-    fn base64(bytes: &[u8]) -> String {
-        const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
-        for chunk in bytes.chunks(3) {
-            let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
-            for i in 0..4 {
-                if i <= chunk.len() {
-                    out.push(TABLE[(n >> (18 - 6 * i) & 63) as usize] as char);
-                } else {
-                    out.push('=');
+/// Linux: the apps in the app menu, from their .desktop files (system, your
+/// own, Flatpak and Snap), with their icons from the icon themes.
+#[cfg(target_os = "linux")]
+mod platform {
+    use std::{
+        collections::HashSet,
+        path::{Path, PathBuf},
+    };
+
+    use super::{base64, exe_name, plain_name, AppInfo};
+
+    pub fn all() -> Vec<AppInfo> {
+        let mut apps: Vec<AppInfo> = Vec::new();
+        // The same file name in an earlier folder wins (yours over the system's).
+        let mut seen_files = HashSet::new();
+        for dir in data_dirs().iter().map(|d| d.join("applications")) {
+            let mut files = Vec::new();
+            find_desktop_files(&dir, 0, &mut files);
+            for file in files {
+                let id = file.strip_prefix(&dir).unwrap_or(&file).to_string_lossy().replace('/', "-");
+                if !seen_files.insert(id) {
+                    continue;
+                }
+                if let Some(app) = read_entry(&file) {
+                    if !apps.iter().any(|a| a.exe == app.exe) {
+                        apps.push(app);
+                    }
                 }
             }
         }
-        out
+        apps.sort_by_key(|a| a.name.to_lowercase());
+        apps
+    }
+
+    /// Browse: a .desktop file, or a program.
+    pub fn info_for(path: &str) -> AppInfo {
+        if path.ends_with(".desktop") {
+            if let Some(app) = read_entry(Path::new(path)) {
+                return app;
+            }
+        }
+        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None }
+    }
+
+    /// Where apps and icons live: yours first, then the system's, Flatpak and Snap.
+    fn data_dirs() -> Vec<PathBuf> {
+        let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+        let mut dirs = vec![std::env::var_os("XDG_DATA_HOME").map(PathBuf::from).unwrap_or_else(|| home.join(".local/share"))];
+        let system = std::env::var("XDG_DATA_DIRS").unwrap_or_default();
+        let system = if system.is_empty() { "/usr/local/share:/usr/share".to_owned() } else { system };
+        dirs.extend(system.split(':').filter(|d| !d.is_empty()).map(PathBuf::from));
+        dirs.push(home.join(".local/share/flatpak/exports/share"));
+        dirs.push(PathBuf::from("/var/lib/flatpak/exports/share"));
+        dirs.push(PathBuf::from("/var/lib/snapd/desktop"));
+        let mut unique = Vec::new();
+        for dir in dirs {
+            if !unique.contains(&dir) {
+                unique.push(dir);
+            }
+        }
+        unique
+    }
+
+    fn find_desktop_files(dir: &Path, depth: u32, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else { return };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.is_dir() && depth < 2 {
+                find_desktop_files(&path, depth + 1, out);
+            } else if path.extension().is_some_and(|e| e == "desktop") {
+                out.push(path);
+            }
+        }
+    }
+
+    /// One app from its .desktop file; None for hidden entries and ones that
+    /// aren't apps.
+    fn read_entry(file: &Path) -> Option<AppInfo> {
+        let text = std::fs::read_to_string(file).ok()?;
+        let mut in_entry = false;
+        let (mut name, mut exec, mut icon, mut flatpak) = (None, None, None, None);
+        for line in text.lines() {
+            let line = line.trim();
+            if line.starts_with('[') {
+                in_entry = line == "[Desktop Entry]";
+                continue;
+            }
+            if !in_entry {
+                continue;
+            }
+            let Some((key, value)) = line.split_once('=') else { continue };
+            match key.trim() {
+                "Name" => name = Some(value.trim().to_owned()),
+                "Exec" => exec = Some(value.trim().to_owned()),
+                "Icon" => icon = Some(value.trim().to_owned()),
+                "X-Flatpak" => flatpak = Some(value.trim().to_lowercase()),
+                "Type" if value.trim() != "Application" => return None,
+                "NoDisplay" | "Hidden" if value.trim() == "true" => return None,
+                _ => {}
+            }
+        }
+        let (name, exec) = (name?, exec?);
+        // Steam games start through Steam, so their own program isn't known here.
+        if exec.contains("steam://") {
+            return None;
+        }
+        let exe = match flatpak {
+            // KDE knows Flatpak apps by their id, which is what's matched.
+            Some(id) => id,
+            None => program(&exec)?,
+        };
+        Some(AppInfo { name, exe, icon: icon.and_then(|i| icon_data(&i)) })
+    }
+
+    /// The program an Exec line starts: "env FOO=1 /usr/bin/firefox %u" → "firefox".
+    fn program(exec: &str) -> Option<String> {
+        let words: Vec<&str> = exec.split_whitespace().map(|w| w.trim_matches('"')).collect();
+        let mut words = words.into_iter().skip_while(|w| *w == "env" || w.contains('=') && !w.starts_with('/'));
+        let first = words.next()?;
+        Some(exe_name(first))
+    }
+
+    // ------------------------------------------------------------
+    // Icons
+    // ------------------------------------------------------------
+
+    const THEMES: [&str; 5] = ["hicolor", "breeze", "breeze-dark", "Papirus", "Adwaita"];
+    const SIZES: [&str; 7] = ["48x48", "64x64", "128x128", "256x256", "scalable", "32x32", "512x512"];
+
+    fn icon_file(name: &str) -> Option<PathBuf> {
+        if name.starts_with('/') {
+            return Path::new(name).is_file().then(|| PathBuf::from(name));
+        }
+        let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+        let mut bases = vec![home.join(".icons")];
+        bases.extend(data_dirs().into_iter().map(|d| d.join("icons")));
+        for base in &bases {
+            for theme in THEMES {
+                for size in SIZES {
+                    for ext in ["png", "svg"] {
+                        let file = base.join(theme).join(size).join("apps").join(format!("{name}.{ext}"));
+                        if file.is_file() {
+                            return Some(file);
+                        }
+                    }
+                }
+                // Breeze keeps them as apps/48/name.svg.
+                let file = base.join(theme).join("apps/48").join(format!("{name}.svg"));
+                if file.is_file() {
+                    return Some(file);
+                }
+            }
+        }
+        ["png", "svg"].iter().map(|ext| PathBuf::from(format!("/usr/share/pixmaps/{name}.{ext}"))).find(|f| f.is_file())
+    }
+
+    fn icon_data(name: &str) -> Option<String> {
+        let file = icon_file(name)?;
+        let kind = match file.extension()?.to_str()? {
+            "png" => "image/png",
+            "svg" => "image/svg+xml",
+            _ => return None,
+        };
+        let bytes = std::fs::read(&file).ok().filter(|b| b.len() < 512 * 1024)?;
+        Some(format!("data:{kind};base64,{}", base64(&bytes)))
     }
 }
 
-/// Blips only work on Windows so far, so there's nothing to list elsewhere.
-#[cfg(not(windows))]
+/// macOS: blips don't show there yet, so there's nothing to list.
+#[cfg(not(any(windows, target_os = "linux")))]
 mod platform {
     use super::{exe_name, plain_name, AppInfo};
 
@@ -569,4 +721,22 @@ mod platform {
     pub fn info_for(path: &str) -> AppInfo {
         AppInfo { name: plain_name(path), exe: exe_name(path), icon: None }
     }
+}
+
+/// Bytes as base64, for icons sent to the window as data URLs.
+#[cfg_attr(not(any(windows, target_os = "linux")), allow(dead_code))]
+fn base64(bytes: &[u8]) -> String {
+    const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let n = (chunk[0] as u32) << 16 | (*chunk.get(1).unwrap_or(&0) as u32) << 8 | *chunk.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 {
+            if i <= chunk.len() {
+                out.push(TABLE[(n >> (18 - 6 * i) & 63) as usize] as char);
+            } else {
+                out.push('=');
+            }
+        }
+    }
+    out
 }

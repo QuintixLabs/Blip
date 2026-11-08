@@ -77,6 +77,18 @@ pub fn unsupported_reason() -> Option<String> {
     None
 }
 
+pub fn features() -> super::Features {
+    super::Features { text: true, links: true, taskbar: true, games: true, apps: true }
+}
+
+pub fn needs_access() -> bool {
+    false
+}
+
+pub fn allow_access() -> Result<(), String> {
+    Ok(())
+}
+
 // ------------------------------------------------------------
 // Watching clicks (left, right and middle)
 // ------------------------------------------------------------

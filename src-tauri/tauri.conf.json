@@ -38,6 +38,16 @@
         "languages": ["English"],
         "customLanguageFiles": { "English": "installer/English.nsh" }
       }
+    },
+    "linux": {
+      "deb": {
+        "files": { "/usr/lib/udev/rules.d/70-blip.rules": "installer/linux/70-blip.rules" },
+        "postInstallScript": "installer/linux/postinst.sh"
+      },
+      "rpm": {
+        "files": { "/usr/lib/udev/rules.d/70-blip.rules": "installer/linux/70-blip.rules" },
+        "postInstallScript": "installer/linux/postinst.sh"
+      }
     }
   },
   "plugins": {
