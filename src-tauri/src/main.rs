@@ -48,6 +48,7 @@ fn main() {
             commands::state,
             commands::save_settings,
             commands::reset_settings,
+            commands::reset_look,
             commands::blip_status,
             commands::check_update,
             commands::install_update,

@@ -106,7 +106,7 @@ fn watch_clicks() {
 }
 
 unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-    if code >= 0 && super::enabled() {
+    if code >= 0 {
         let info = &*(lparam.0 as *const MSLLHOOKSTRUCT);
         match wparam.0 as u32 {
             WM_LBUTTONDOWN => {

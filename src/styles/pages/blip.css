@@ -4,9 +4,10 @@
    system (also on the welcome screen).
    ============================================================ */
 
-.try-wide {
-  height: 120px;
-  margin: 4px 0 6px;
+.page-hint {
+  margin: -8px 0 4px;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 /* Wider sliders here than on the welcome screen. */

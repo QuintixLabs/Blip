@@ -5,7 +5,7 @@
 // ============================================================
 
 use std::thread;
-use tauri::{window::Color, AppHandle, Emitter, Manager, Theme, WebviewWindow, WindowEvent};
+use tauri::{window::Color, AppHandle, Emitter, Manager, Theme, WebviewWindow};
 
 use super::{builder, logo};
 use crate::app::settings::Store;
@@ -85,14 +85,7 @@ fn open_on(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
         .background_color(background)
         .build()?;
 
-    // Keep the title bar logo readable whenever the title bar changes color.
-    logo::update_window(&window);
-    let tracked = window.clone();
-    window.on_window_event(move |event| {
-        if let WindowEvent::ThemeChanged(_) = event {
-            logo::update_window(&tracked);
-        }
-    });
+    logo::set_window_icon(&window);
     Ok(())
 }
 
@@ -116,6 +109,5 @@ fn window_theme(theme: &str) -> Option<Theme> {
 pub fn apply_theme(app: &AppHandle, theme: &str) {
     if let Some(window) = window(app) {
         let _ = window.set_theme(window_theme(theme));
-        logo::update_window(&window);
     }
 }

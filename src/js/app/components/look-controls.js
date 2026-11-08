@@ -105,23 +105,8 @@ for (const input of $$('.slider input[data-field]')) {
   input.addEventListener('change', () => save({ [input.dataset.field]: Number(input.value) }));
 }
 
-// ------------------------------------------------------------
-// Try it
-// ------------------------------------------------------------
-
-// The blip itself is drawn by the app wherever you click, including here, so
-// this box only has to say so (or why nothing will show).
-function renderTry(state) {
-  const paused = !state.settings.enabled;
-  for (const el of $$('.try')) {
-    el.textContent = paused ? 'Blips are paused. Resume them from the sidebar or the tray.' : 'Click here to try it';
-    el.classList.toggle('is-paused', paused);
-  }
-}
-
 onRender((state) => {
   renderShapes(state);
   renderColors(state);
   renderSliders(state);
-  renderTry(state);
 });

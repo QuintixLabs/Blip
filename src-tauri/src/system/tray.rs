@@ -7,29 +7,23 @@
 //   Open Blip
 //   Settings
 //   ─────────
-//   ✓ Pause blips
-//   ─────────
 //   Exit
 //
-// The menu is rebuilt whenever the settings change (see Store::update).
+// Blip shows blips while it runs; Exit stops it.
 
 use tauri::{
-    menu::{CheckMenuItem, Menu, MenuItem, PredefinedMenuItem},
+    menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter, Manager,
+    AppHandle, Emitter,
 };
 
-use crate::{
-    app::settings::Store,
-    blip,
-    ui::{logo, main_window},
-};
+use crate::ui::{logo, main_window};
 
 const ID: &str = "blip";
 
 pub fn create(app: &AppHandle) -> tauri::Result<()> {
     let mut tray = TrayIconBuilder::with_id(ID)
-        .tooltip(tooltip(app))
+        .tooltip("Blip")
         .menu(&menu(app)?)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| on_menu(app, event.id.as_ref()))
@@ -67,54 +61,29 @@ fn watch_theme(app: &AppHandle) {
     });
 }
 
-/// Rebuilds the menu and tooltip from the current settings.
-pub fn refresh(app: &AppHandle) {
-    if let Some(tray) = app.tray_by_id(ID) {
-        if let Ok(menu) = menu(app) {
-            let _ = tray.set_menu(Some(menu));
-        }
-        let _ = tray.set_tooltip(Some(tooltip(app)));
-    }
-}
+/// The menu never changes, but settings saves still call this (see Store::update).
+pub fn refresh(_app: &AppHandle) {}
 
 /// Hover text while something is happening ("Updating to 2.0.1…"); None goes back to normal.
 pub fn set_status(app: &AppHandle, status: Option<&str>) {
     if let Some(tray) = app.tray_by_id(ID) {
-        let text = status.map(|s| format!("Blip · {s}")).unwrap_or_else(|| tooltip(app));
+        let text = status.map(|s| format!("Blip · {s}")).unwrap_or_else(|| "Blip".into());
         let _ = tray.set_tooltip(Some(text));
     }
 }
 
-fn tooltip(app: &AppHandle) -> String {
-    let enabled = app.try_state::<Store>().map(|s| s.get().settings.enabled).unwrap_or(true);
-    if enabled { "Blip".into() } else { "Blip · paused".into() }
-}
-
 fn menu(app: &AppHandle) -> tauri::Result<Menu<tauri::Wry>> {
-    let enabled = app.state::<Store>().get().settings.enabled;
     let open = MenuItem::with_id(app, "open", "Open Blip", true, None::<&str>)?;
     let settings = MenuItem::with_id(app, "settings", "Settings", true, None::<&str>)?;
-    let pause = CheckMenuItem::with_id(app, "pause", "Pause blips", true, !enabled, None::<&str>)?;
     let exit = MenuItem::with_id(app, "exit", "Exit", true, None::<&str>)?;
-    Menu::with_items(
-        app,
-        &[&open, &settings, &PredefinedMenuItem::separator(app)?, &pause, &PredefinedMenuItem::separator(app)?, &exit],
-    )
+    Menu::with_items(app, &[&open, &settings, &PredefinedMenuItem::separator(app)?, &exit])
 }
 
 fn on_menu(app: &AppHandle, id: &str) {
     match id {
         "open" => main_window::open_async(app),
         "settings" => main_window::open_page_async(app, "settings"),
-        "pause" => toggle_pause(app),
         "exit" => app.exit(0),
         _ => {}
     }
-}
-
-/// Pauses or resumes blips, like the switch in the window.
-fn toggle_pause(app: &AppHandle) {
-    let store = app.state::<Store>();
-    let data = store.update(app, |data| data.settings.enabled = !data.settings.enabled);
-    blip::apply(&data.settings);
 }

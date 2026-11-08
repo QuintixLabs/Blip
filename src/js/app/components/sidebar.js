@@ -1,10 +1,9 @@
 // ============================================================
 // sidebar.js
-// The sidebar: switching pages, collapsing it to icons, and the
-// Pause blips button.
+// The sidebar: switching pages and collapsing it to icons.
 // ============================================================
 
-import { $, $$, app, onRender, save, status } from '../state.js';
+import { $, $$, status } from '../state.js';
 
 const root = document.documentElement;
 
@@ -50,20 +49,3 @@ $('#sidebar-toggle').addEventListener('click', () => {
   $('.brand').addEventListener('mouseleave', () => root.classList.remove('hover-lock'), { once: true });
 });
 
-// ------------------------------------------------------------
-// Pause blips
-// ------------------------------------------------------------
-
-$('#pause').addEventListener('click', () => save({ enabled: !app.state.settings.enabled }));
-
-onRender((state) => {
-  const on = state.settings.enabled;
-  const button = $('#pause');
-  // Paused: the button turns blue so it's clear how to get blips back.
-  button.classList.toggle('btn-accent', !on);
-  button.classList.toggle('btn-muted', on);
-  button.classList.toggle('is-paused', !on);
-  button.title = on ? 'Pause blips' : 'Resume blips';
-  button.querySelector('.label-text').textContent = on ? 'Pause blips' : 'Resume blips';
-  $('#pause-state').textContent = on ? 'Blips are on' : 'Blips are paused';
-});

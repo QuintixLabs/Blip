@@ -36,9 +36,8 @@ function apply(n) {
 /**
  * Shows step 0, 1 or 2. The old step quickly fades out, then the new one fades
  * in, sliding a little in the direction you're going. The two never show
- * together. Between the hello step and the next one the buttons and dots sit
- * in a different place, so they fade out and back in with the step instead
- * of jumping.
+ * together. The buttons and dots sit right under each step, so they fade out
+ * and back in with it instead of jumping.
  */
 export function goStep(n) {
   status();
@@ -57,7 +56,8 @@ export function goStep(n) {
 
   changingUntil = performance.now() + OUT_MS + IN_MS;
   const dir = n > from ? 1 : -1;
-  const relayout = (from === 0) !== (n === 0);
+  // Each step has its own height, so the buttons and dots always move: fade them too.
+  const relayout = true;
   const fade = (el, keyframes, options) => el.animate(keyframes, options);
   const outOptions = { duration: OUT_MS, easing: 'ease-in', fill: 'forwards' };
 

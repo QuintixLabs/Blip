@@ -11,6 +11,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use tauri::{image::Image, WebviewWindow};
 
 const WINDOW: &[u8] = include_bytes!("../../icons/runtime/logo.png");
+/// Windows and macOS show tray icons small: drawn at 32 px straight from the
+/// logo, so they stay sharp. Linux panels are often bigger.
+#[cfg(not(target_os = "linux"))]
+const TRAY: &[u8] = include_bytes!("../../icons/app/32x32.png");
+#[cfg(target_os = "linux")]
 const TRAY: &[u8] = include_bytes!("../../icons/runtime/tray.png");
 
 /// The last light/dark seen by taskbar_is_light(), kept current by the tray.
@@ -30,7 +35,13 @@ pub fn tray_icon() -> Option<Image<'static>> {
     Image::from_bytes(TRAY).ok()
 }
 
-pub fn update_window(window: &WebviewWindow) {
+/// On Windows the window already uses the app's icon file, which has a sharp
+/// picture for every size (title bar, taskbar, Alt+Tab). Giving it one big
+/// picture instead makes Windows shrink it, blurry. Elsewhere it's set here.
+pub fn set_window_icon(window: &WebviewWindow) {
+    if cfg!(windows) {
+        return;
+    }
     if let Ok(icon) = Image::from_bytes(WINDOW) {
         let _ = window.set_icon(icon);
     }

@@ -9,29 +9,17 @@ main:has(.welcome:not([hidden])) {
   scrollbar-gutter: auto;
 }
 
+/* Every step sits in the middle of the window with its buttons right under
+   it. Steps differ in height, so the buttons move between them; they fade
+   out and back in with the step instead of jumping (see welcome.js). */
 .welcome {
   display: flex;
   flex-direction: column;
+  align-self: center;
   width: 100%;
   max-width: 480px;
   margin: 0 auto;
-}
-
-/* The key steps share one fixed height, so the buttons and dots never move
-   between them. */
-.stage {
-  height: 436px;
-}
-
-/* The first step is its own centered screen. Going to the next step, the
-   buttons glide down to their place instead of jumping (see welcome.js). */
-.welcome.is-intro {
-  align-self: center;
   padding-bottom: 40px; /* a little above the middle looks centered */
-}
-
-.welcome.is-intro .stage {
-  height: auto;
 }
 
 /* ------------------------------------------------------------

@@ -49,8 +49,6 @@ pub struct Settings {
     pub skip_games: bool,
 
     // General
-    /// Off: Blip is paused (tray: "Pause blips").
-    pub enabled: bool,
     /// "system", "light" or "dark".
     pub theme: String,
     pub start_with_computer: bool,
@@ -73,7 +71,6 @@ impl Default for Settings {
             skip_link_cursor: false,
             skip_taskbar: true,
             skip_games: true,
-            enabled: true,
             theme: "system".into(),
             start_with_computer: true,
             auto_update: true,

@@ -1,6 +1,6 @@
 /* ============================================================
    sidebar.css
-   The sidebar: logo, pages, the Pause blips button, and folding it
+   The sidebar: logo, pages, and folding it
    down to icons.
    ============================================================ */
 
@@ -148,70 +148,4 @@
 
 .nav .is-active .icon {
   color: var(--accent);
-}
-
-/* ------------------------------------------------------------
-   Pick color
-   ------------------------------------------------------------ */
-
-.sidebar-foot {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: auto;
-}
-
-/* The Pause blips button. Icon and label centered. Folding shrinks the label to nothing (rather than
-   just hiding it), so the icon glides to the middle of the narrow button. */
-.pick {
-  width: 100%;
-  height: 40px;
-  padding: 0;
-  overflow: hidden;
-}
-
-.pick .label-text {
-  max-width: 110px;
-  overflow: hidden;
-}
-
-.can-animate .pick,
-.can-animate .pick .label-text {
-  transition: gap 220ms var(--ease), max-width 220ms var(--ease), opacity 140ms, background 120ms;
-}
-
-.is-collapsed .pick {
-  gap: 0;
-}
-
-.is-collapsed .pick .label-text {
-  max-width: 0;
-}
-
-/* Pause shows the pause icon, paused shows play. */
-.pick .icon-play,
-.pick.is-paused .icon-pause {
-  display: none;
-}
-
-.pick.is-paused .icon-play {
-  display: inline-block;
-}
-
-/* "Blips are on" under the button. Its height is fixed from the start: it's
-   filled in a moment after the window opens, and growing then would push the
-   button up. Folded, it keeps its space for the same reason. */
-.pause-state {
-  display: block;
-  height: 18px;
-  color: var(--muted);
-  font-size: 12px;
-  text-align: center;
-  white-space: nowrap;
-  transition: opacity 140ms;
-}
-
-.is-collapsed .pause-state {
-  visibility: hidden;
-  opacity: 0;
 }

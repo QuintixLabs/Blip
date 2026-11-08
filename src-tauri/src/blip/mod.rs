@@ -23,10 +23,7 @@ mod other;
 #[cfg(not(windows))]
 use other as platform;
 
-use std::sync::{
-    atomic::{AtomicBool, Ordering},
-    OnceLock, RwLock,
-};
+use std::sync::{OnceLock, RwLock};
 
 use crate::app::settings::Settings;
 use style::Style;
@@ -47,7 +44,6 @@ pub struct Rules {
 struct Live {
     style: RwLock<Style>,
     rules: RwLock<Rules>,
-    enabled: AtomicBool,
 }
 
 static LIVE: OnceLock<Live> = OnceLock::new();
@@ -55,7 +51,7 @@ static LIVE: OnceLock<Live> = OnceLock::new();
 fn live() -> &'static Live {
     LIVE.get_or_init(|| {
         let s = Settings::default();
-        Live { style: RwLock::new(Style::from_settings(&s)), rules: RwLock::new(rules_of(&s)), enabled: AtomicBool::new(s.enabled) }
+        Live { style: RwLock::new(Style::from_settings(&s)), rules: RwLock::new(rules_of(&s)) }
     })
 }
 
@@ -74,7 +70,6 @@ pub fn apply(settings: &Settings) {
     let live = live();
     *live.style.write().unwrap() = Style::from_settings(settings);
     *live.rules.write().unwrap() = rules_of(settings);
-    live.enabled.store(settings.enabled, Ordering::Relaxed);
 }
 
 /// None when blips work here; otherwise why not, in plain words (shown in the window).
@@ -88,8 +83,4 @@ fn style() -> Style {
 
 fn rules() -> Rules {
     *live().rules.read().unwrap()
-}
-
-fn enabled() -> bool {
-    live().enabled.load(Ordering::Relaxed)
 }

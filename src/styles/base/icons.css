@@ -26,8 +26,6 @@
 .icon-monitor { --icon: url("../../assets/icons/ui/monitor.svg"); }
 .icon-panel-close { --icon: url("../../assets/icons/ui/panel-left-close.svg"); }
 .icon-panel-open { --icon: url("../../assets/icons/ui/panel-left-open.svg"); }
-.icon-pause { --icon: url("../../assets/icons/ui/pause.svg"); }
-.icon-play { --icon: url("../../assets/icons/ui/play.svg"); }
 .icon-rotate-ccw { --icon: url("../../assets/icons/ui/rotate-ccw.svg"); }
 .icon-settings { --icon: url("../../assets/icons/ui/settings.svg"); }
 

@@ -141,32 +141,3 @@
   background: #fff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
-
-/* ------------------------------------------------------------
-   Try it
-   ------------------------------------------------------------ */
-
-/* The plain arrow cursor, so "Don't show blips on links" never hides the blip here. */
-.try {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 96px;
-  margin-top: 14px;
-  border: 1.5px dashed var(--line-strong);
-  border-radius: 12px;
-  color: var(--muted);
-  font-size: 14px;
-  cursor: default;
-  transition: border-color 150ms, color 150ms;
-}
-
-.try:hover {
-  border-color: var(--accent);
-  color: var(--text);
-}
-
-.try.is-paused {
-  border-color: var(--line);
-  color: var(--faint);
-}

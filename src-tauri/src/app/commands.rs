@@ -49,6 +49,29 @@ pub async fn reset_settings(app: AppHandle, store: State<'_, Store>) -> Result<D
     save_settings(app, store, settings).await
 }
 
+/// The Blip page's "Reset to defaults": the look and the "Don't show blips"
+/// rules go back to how Blip comes. Theme, startup and updates stay.
+#[tauri::command]
+pub async fn reset_look(app: AppHandle, store: State<'_, Store>) -> Result<Data, String> {
+    let d = Settings::default();
+    let current = store.get().settings;
+    let settings = Settings {
+        shape: d.shape,
+        color: d.color,
+        start_size: d.start_size,
+        end_size: d.end_size,
+        opacity: d.opacity,
+        speed: d.speed,
+        fade_start: d.fade_start,
+        skip_text_cursor: d.skip_text_cursor,
+        skip_link_cursor: d.skip_link_cursor,
+        skip_taskbar: d.skip_taskbar,
+        skip_games: d.skip_games,
+        ..current
+    };
+    save_settings(app, store, settings).await
+}
+
 /// None when blips work on this system; otherwise why not, for the window to show.
 #[tauri::command]
 pub fn blip_status() -> Option<String> {
