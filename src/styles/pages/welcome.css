@@ -143,9 +143,18 @@ main:has(.welcome:not([hidden])) {
   background: var(--accent);
 }
 
-/* Linux on Wayland: the buttons wait until Blip may see clicks (the Allow
-   button above them). */
+/* The buttons wait (faded out) while Blip checks whether blips work here, and
+   on Linux Wayland until you allow it to see clicks (the Allow button above
+   them). Then they fade in. */
+.welcome .step-actions,
+.welcome .dots {
+  transition: opacity 300ms var(--ease);
+}
+
+.checking-blips .welcome .step-actions,
+.checking-blips .welcome .dots,
 .needs-access .welcome .step-actions,
 .needs-access .welcome .dots {
-  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
 }

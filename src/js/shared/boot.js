@@ -20,4 +20,6 @@ try {
   if (window.__START_PAGE__ === 'welcome') {
     root.classList.add('is-welcome');
   }
+  // Until pages/blip.js knows whether blips work here (it may need your OK first).
+  root.classList.add('checking-blips');
 } catch {}
