@@ -27,8 +27,11 @@ function renderChoices(state) {
       .join('');
   }
 
+  // data-invert: the switch shows the opposite of the setting ("Where blips show"
+  // switches are on when blips show, while the setting says where they're skipped).
   for (const el of $$('.toggle')) {
-    el.setAttribute('aria-checked', String(Boolean(state.settings[el.dataset.field])));
+    const value = Boolean(state.settings[el.dataset.field]);
+    el.setAttribute('aria-checked', String('invert' in el.dataset ? !value : value));
   }
 }
 

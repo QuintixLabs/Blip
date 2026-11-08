@@ -23,9 +23,9 @@ use std::{
 
 use tiny_skia::Pixmap;
 use windows::{
-    core::{w, PCWSTR},
+    core::{w, PCWSTR, PWSTR},
     Win32::{
-        Foundation::{COLORREF, HINSTANCE, HWND, LPARAM, LRESULT, POINT, RECT, SIZE, WPARAM},
+        Foundation::{CloseHandle, COLORREF, HINSTANCE, HWND, LPARAM, LRESULT, POINT, RECT, SIZE, WPARAM},
         Graphics::{
             Dwm::DwmFlush,
             Gdi::{
@@ -34,13 +34,16 @@ use windows::{
                 HGDIOBJ, MONITOR_DEFAULTTONEAREST,
             },
         },
-        System::LibraryLoader::GetModuleHandleW,
+        System::{
+            LibraryLoader::GetModuleHandleW,
+            Threading::{OpenProcess, QueryFullProcessImageNameW, PROCESS_NAME_WIN32, PROCESS_QUERY_LIMITED_INFORMATION},
+        },
         UI::{
             HiDpi::{GetDpiForMonitor, MDT_EFFECTIVE_DPI},
             Shell::{SHQueryUserNotificationState, QUNS_RUNNING_D3D_FULL_SCREEN},
             WindowsAndMessaging::{
                 CallNextHookEx, CreateWindowExW, DefWindowProcW, DispatchMessageW, GetAncestor, GetClassNameW, GetClipCursor,
-                GetCursorInfo, GetMessageW, GetSystemMetrics, LoadCursorW, PeekMessageW, RegisterClassW, SetWindowPos,
+                GetCursorInfo, GetMessageW, GetSystemMetrics, GetWindowThreadProcessId, LoadCursorW, PeekMessageW, RegisterClassW, SetWindowPos,
                 SetWindowsHookExW, ShowWindow, TranslateMessage, UpdateLayeredWindow, WindowFromPoint, CURSORINFO,
                 CURSOR_SHOWING, GA_ROOT, HCURSOR, HWND_TOPMOST, IDC_HAND, IDC_IBEAM, MSG, MSLLHOOKSTRUCT, PM_REMOVE,
                 SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SW_HIDE, SW_SHOWNOACTIVATE,
@@ -106,7 +109,7 @@ fn watch_clicks() {
 }
 
 unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
-    if code >= 0 {
+    if code >= 0 && super::active() {
         let info = &*(lparam.0 as *const MSLLHOOKSTRUCT);
         match wparam.0 as u32 {
             WM_LBUTTONDOWN => {
@@ -150,7 +153,7 @@ fn skipped_on_press() -> bool {
 }
 
 fn skipped_on_release(at: POINT) -> bool {
-    super::rules().taskbar && on_taskbar(at)
+    super::rules().taskbar && on_system_ui(at)
 }
 
 /// The cursor showing right now; None when it's hidden.
@@ -181,21 +184,52 @@ fn in_game(cursor_hidden: bool) -> bool {
     matches!(unsafe { SHQueryUserNotificationState() }, Ok(state) if state == QUNS_RUNNING_D3D_FULL_SCREEN)
 }
 
-/// The taskbar, on any monitor, including its buttons and tray.
-fn on_taskbar(at: POINT) -> bool {
+/// Windows keeps these in a layer above every app, so a blip there would be
+/// hidden underneath: the taskbar (any monitor), Start, search, the
+/// notification and quick settings panels, the tray overflow.
+const SYSTEM_UI_CLASSES: [&str; 6] = [
+    "Shell_TrayWnd",
+    "Shell_SecondaryTrayWnd",
+    "NotifyIconOverflowWindow",
+    "TopLevelWindowForOverflowXamlIsland",
+    "Xaml_WindowedPopupClass",
+    "Windows.UI.Core.CoreWindow",
+];
+const SYSTEM_UI_PROGRAMS: [&str; 5] =
+    ["startmenuexperiencehost.exe", "searchhost.exe", "searchapp.exe", "shellexperiencehost.exe", "shellhost.exe"];
+
+fn on_system_ui(at: POINT) -> bool {
     unsafe {
         let hwnd = WindowFromPoint(at);
         if hwnd.0.is_null() {
             return false;
         }
         let root = GetAncestor(hwnd, GA_ROOT);
-        let mut name = [0u16; 64];
-        let len = GetClassNameW(if root.0.is_null() { hwnd } else { root }, &mut name);
+        let top = if root.0.is_null() { hwnd } else { root };
+        let mut name = [0u16; 128];
+        let len = GetClassNameW(top, &mut name);
         let class = String::from_utf16_lossy(&name[..len.max(0) as usize]);
-        matches!(class.as_str(), "Shell_TrayWnd" | "Shell_SecondaryTrayWnd")
+        SYSTEM_UI_CLASSES.contains(&class.as_str()) || program_of(top).is_some_and(|p| SYSTEM_UI_PROGRAMS.contains(&p.as_str()))
     }
 }
 
+/// The file name of the program that owns `hwnd`, lowercase ("searchhost.exe").
+fn program_of(hwnd: HWND) -> Option<String> {
+    unsafe {
+        let mut pid = 0u32;
+        GetWindowThreadProcessId(hwnd, Some(&mut pid));
+        let process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, false, pid).ok()?;
+        let mut buf = [0u16; 512];
+        let mut len = buf.len() as u32;
+        let ok = QueryFullProcessImageNameW(process, PROCESS_NAME_WIN32, PWSTR(buf.as_mut_ptr()), &mut len).is_ok();
+        let _ = CloseHandle(process);
+        if !ok {
+            return None;
+        }
+        let path = String::from_utf16_lossy(&buf[..len as usize]);
+        path.rsplit('\\').next().map(|name| name.to_lowercase())
+    }
+}
 /// The screen's scaling where `at` is: 1.0 at 100 %, 1.5 at 150 %.
 fn scale_at(at: POINT) -> f64 {
     unsafe {

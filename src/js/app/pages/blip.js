@@ -9,6 +9,9 @@
 import { $, $$, app, invoke, render, status } from '../state.js';
 import { confirmAction } from '../components/dialog.js';
 
+// The note about the taskbar and Start menu is about Windows only.
+for (const el of $$('[data-windows-only]')) el.hidden = !navigator.userAgent.includes('Windows');
+
 const reason = await invoke('blip_status');
 for (const el of $$('[data-unsupported]')) {
   el.textContent = reason ?? '';

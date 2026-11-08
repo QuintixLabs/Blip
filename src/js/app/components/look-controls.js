@@ -5,7 +5,7 @@
 // page, wherever they appear.
 // ============================================================
 
-import { $$, onRender, save } from '../state.js';
+import { $$, app, onRender, save } from '../state.js';
 
 // ------------------------------------------------------------
 // Shapes
@@ -105,6 +105,79 @@ for (const input of $$('.slider input[data-field]')) {
   input.addEventListener('change', () => save({ [input.dataset.field]: Number(input.value) }));
 }
 
+// ------------------------------------------------------------
+// Try it (welcome screen)
+// ------------------------------------------------------------
+
+// Real blips only start once the welcome screen is done, so this box shows one
+// itself: same shape, color, sizes, opacity and timing as the real thing
+// (see blip/style.rs).
+const tryBox = $$('#try')[0];
+
+function playBlip(x, y) {
+  const s = app.state.settings;
+  const canvas = tryBox.querySelector('canvas');
+  const scale = window.devicePixelRatio || 1;
+  const { width, height } = tryBox.getBoundingClientRect();
+  if (canvas.width !== Math.round(width * scale)) {
+    canvas.width = Math.round(width * scale);
+    canvas.height = Math.round(height * scale);
+  }
+  const g = canvas.getContext('2d');
+  const duration = 1500 / Math.min(Math.max(s.speed, 1), 10);
+  const fadeStart = s.fadeStart / 100;
+  const started = performance.now();
+
+  const frame = (now) => {
+    const t = (now - started) / duration;
+    g.setTransform(1, 0, 0, 1, 0, 0);
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    if (t >= 1) return;
+    const eased = 1 - (1 - t) ** 3;
+    const size = s.startSize + (s.endSize - s.startSize) * eased;
+    const fade = t > fadeStart ? 1 - (t - fadeStart) / (1 - fadeStart) : 1;
+    g.setTransform(scale, 0, 0, scale, 0, 0);
+    g.globalAlpha = (s.opacity / 100) * Math.min(Math.max(fade, 0), 1);
+    drawShape(g, s.shape, s.color, x, y, size);
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+}
+
+function drawShape(g, shape, color, x, y, size) {
+  const r = size / 2;
+  g.fillStyle = color;
+  g.strokeStyle = color;
+  g.beginPath();
+  if (shape === 'square') {
+    g.roundRect(x - r, y - r, size, size, size * 0.14);
+  } else if (shape === 'hexagon' || shape === 'diamond') {
+    const sides = shape === 'hexagon' ? 6 : 4;
+    const start = shape === 'hexagon' ? 0 : -90;
+    for (let i = 0; i < sides; i++) {
+      const a = ((start + (i * 360) / sides) * Math.PI) / 180;
+      g.lineTo(x + r * Math.cos(a), y + r * Math.sin(a));
+    }
+    g.closePath();
+  } else if (shape === 'ring') {
+    const width = Math.max(size * 0.12, 1.5);
+    g.lineWidth = width;
+    g.arc(x, y, Math.max(r - width / 2, 0.5), 0, Math.PI * 2);
+    g.stroke();
+    return;
+  } else {
+    g.arc(x, y, r, 0, Math.PI * 2);
+  }
+  g.fill();
+}
+
+if (tryBox) {
+  // On release, like real blips.
+  tryBox.addEventListener('pointerup', (e) => {
+    const rect = tryBox.getBoundingClientRect();
+    playBlip(e.clientX - rect.left, e.clientY - rect.top);
+  });
+}
 onRender((state) => {
   renderShapes(state);
   renderColors(state);

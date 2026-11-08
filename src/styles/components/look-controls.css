@@ -141,3 +141,62 @@
   background: #fff;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.3);
 }
+
+/* ------------------------------------------------------------
+   Try it (welcome screen)
+   ------------------------------------------------------------ */
+
+/* A soft middle gray, so dark and light blips both show; the plain arrow
+   cursor, like clicking anywhere else. */
+.try {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 92px;
+  margin-top: 12px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8e8f99, #a7a8b1);
+  cursor: default;
+  user-select: none;
+}
+
+.try span {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 13px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.try canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ------------------------------------------------------------
+   A warning under a row (Where blips show → taskbar, Windows only)
+   ------------------------------------------------------------ */
+
+.row-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--warning);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.row-warning[hidden] {
+  display: none;
+}
+
+.row-warning .icon {
+  width: 14px;
+  height: 14px;
+  margin-top: 1px;
+}

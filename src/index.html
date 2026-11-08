@@ -59,7 +59,7 @@
           <div class="step" data-step="1" hidden>
             <div class="step-icon badge"><i class="icon icon-click"></i></div>
             <h1>Make it yours</h1>
-            <p class="lead">Pick a shape and a color, then click anywhere on your screen to see it.</p>
+            <p class="lead">Pick a shape and a color. You can fine-tune the rest later in Blip.</p>
             <div class="step-body">
               <div class="group">
                 <div class="row">
@@ -71,6 +71,7 @@
                   <div class="swatches" data-colors></div>
                 </div>
               </div>
+              <div class="try" id="try"><canvas></canvas><span>Click here to see your blip</span></div>
             </div>
           </div>
 
@@ -91,7 +92,6 @@
       <section id="blip" class="view" hidden>
         <header class="page-head">
           <h2>Blip</h2>
-          <button id="reset-look" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset to defaults</button>
         </header>
         <p class="page-hint">Click anywhere on your screen to see your blip.</p>
         <p class="notice" data-unsupported hidden></p>
@@ -147,38 +147,43 @@
           </div>
         </div>
 
-        <h3 class="section">Don't show blips</h3>
+        <h3 class="section">Where blips show</h3>
         <div class="group">
           <div class="row">
             <div>
               <div class="row-title">On text</div>
-              <div class="row-hint">When the text cursor is showing, like when you type or select</div>
+              <div class="row-hint">When you type or select text (the text cursor is showing)</div>
             </div>
-            <button class="toggle" role="switch" data-field="skipTextCursor"></button>
+            <button class="toggle" role="switch" data-field="skipTextCursor" data-invert></button>
           </div>
           <div class="row">
             <div>
               <div class="row-title">On links</div>
               <div class="row-hint">When the hand cursor is showing</div>
             </div>
-            <button class="toggle" role="switch" data-field="skipLinkCursor"></button>
+            <button class="toggle" role="switch" data-field="skipLinkCursor" data-invert></button>
           </div>
           <div class="row">
             <div>
-              <div class="row-title">On the taskbar</div>
-              <div class="row-hint">Clicks on the taskbar and its icons</div>
+              <div class="row-title">On the taskbar and Start menu</div>
+              <div class="row-hint">Clicks on the taskbar, Start, search and the notification panels</div>
+              <div class="row-warning" data-windows-only hidden><i class="icon icon-alert"></i>Windows keeps these above every app, so blips there show up underneath them.</div>
             </div>
-            <button class="toggle" role="switch" data-field="skipTaskbar"></button>
+            <button class="toggle" role="switch" data-field="skipTaskbar" data-invert></button>
           </div>
           <div class="row">
             <div>
               <div class="row-title">In games</div>
               <div class="row-hint">When a game hides or holds the cursor, or runs full screen</div>
             </div>
-            <button class="toggle" role="switch" data-field="skipGames"></button>
+            <button class="toggle" role="switch" data-field="skipGames" data-invert></button>
           </div>
         </div>
-      </section>
+
+        <div class="footer">
+          <span></span>
+          <button id="reset-look" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset to defaults</button>
+        </div>      </section>
 
       <section id="settings" class="view" hidden>
         <header class="page-head">

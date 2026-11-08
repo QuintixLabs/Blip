@@ -23,7 +23,10 @@ mod other;
 #[cfg(not(windows))]
 use other as platform;
 
-use std::sync::{OnceLock, RwLock};
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    OnceLock, RwLock,
+};
 
 use crate::app::settings::Settings;
 use style::Style;
@@ -35,6 +38,7 @@ pub struct Rules {
     pub text_cursor: bool,
     /// The link cursor (hand) is showing.
     pub link_cursor: bool,
+    /// The taskbar, Start menu and other system panels (Windows draws them above all apps).
     pub taskbar: bool,
     /// A game holds or hides the cursor, or runs full screen.
     pub games: bool,
@@ -44,6 +48,8 @@ pub struct Rules {
 struct Live {
     style: RwLock<Style>,
     rules: RwLock<Rules>,
+    /// Off until the welcome screen is done: blips start with "Start using Blip".
+    active: AtomicBool,
 }
 
 static LIVE: OnceLock<Live> = OnceLock::new();
@@ -51,7 +57,7 @@ static LIVE: OnceLock<Live> = OnceLock::new();
 fn live() -> &'static Live {
     LIVE.get_or_init(|| {
         let s = Settings::default();
-        Live { style: RwLock::new(Style::from_settings(&s)), rules: RwLock::new(rules_of(&s)) }
+        Live { style: RwLock::new(Style::from_settings(&s)), rules: RwLock::new(rules_of(&s)), active: AtomicBool::new(false) }
     })
 }
 
@@ -70,6 +76,7 @@ pub fn apply(settings: &Settings) {
     let live = live();
     *live.style.write().unwrap() = Style::from_settings(settings);
     *live.rules.write().unwrap() = rules_of(settings);
+    live.active.store(!settings.show_welcome, Ordering::Relaxed);
 }
 
 /// None when blips work here; otherwise why not, in plain words (shown in the window).
@@ -83,4 +90,8 @@ fn style() -> Style {
 
 fn rules() -> Rules {
     *live().rules.read().unwrap()
+}
+
+fn active() -> bool {
+    live().active.load(Ordering::Relaxed)
 }

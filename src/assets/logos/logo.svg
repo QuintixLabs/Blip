@@ -7,11 +7,11 @@
 <ellipse cx="255.5" cy="256.5" rx="246.5" ry="239.5" stroke-width="40" stroke="#4FC4FF" mask="url(#stroke0_17_2)"/>
 </g>
 <g filter="url(#filter1_d_17_2)">
-<path d="M438 257C438 351.441 356.292 428 255.5 428C154.708 428 73 351.441 73 257C73 162.559 154.708 86 255.5 86C356.292 86 438 162.559 438 257Z" fill="url(#paint0_linear_17_2)" fill-opacity="0.5" shape-rendering="crispEdges"/>
+<path d="M438 257C438 351.441 356.292 428 255.5 428C154.708 428 73 351.441 73 257C73 162.559 154.708 86 255.5 86C356.292 86 438 162.559 438 257Z" fill="url(#paint0_linear_17_2)" fill-opacity="0.5"/>
 <mask id="stroke1_17_2" fill="white">
 <path d="M438 257C438 351.441 356.292 428 255.5 428C154.708 428 73 351.441 73 257C73 162.559 154.708 86 255.5 86C356.292 86 438 162.559 438 257Z"/>
 </mask>
-<path d="M438 257C438 351.441 356.292 428 255.5 428C154.708 428 73 351.441 73 257C73 162.559 154.708 86 255.5 86C356.292 86 438 162.559 438 257Z" stroke-width="30" stroke="#05EBF3" shape-rendering="crispEdges" mask="url(#stroke1_17_2)"/>
+<path d="M438 257C438 351.441 356.292 428 255.5 428C154.708 428 73 351.441 73 257C73 162.559 154.708 86 255.5 86C356.292 86 438 162.559 438 257Z" stroke-width="30" stroke="#05EBF3" mask="url(#stroke1_17_2)"/>
 </g>
 <defs>
 <filter id="filter0_d_17_2" x="5" y="17" width="501" height="487" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
