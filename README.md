@@ -6,8 +6,8 @@
 
 <p align="center">
 <a href="#-installation">📦 Installation</a> •
-<a href="#-features">⭐ Features</a>
-<!--<a href="#-showcase">📸 Showcase</a>-->
+<a href="#-features">⭐ Features</a> •
+<a href="#-showcase">📸 Showcase</a>
 </p>
 
 ## 📦 Installation
@@ -31,14 +31,10 @@ Run it, and the welcome screen lets you pick a shape and a color before you star
 - *And much more...!*
 
 
-<!--
+
 ## 📸 Showcase
--->
 
-<!---
-https://github.com/user-attachments/assets/71a0f346-05cc-4036-bcb1-67fe7320dfb3
--->
-
+https://github.com/user-attachments/assets/6206bbc4-8847-4bac-a029-8006b49d5b3d
 
 
 ## 📄 License
