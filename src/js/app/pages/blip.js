@@ -1,16 +1,19 @@
 // ============================================================
 // blip.js
-// The Blip page: how a blip looks and where it doesn't show. The
-// controls themselves are in components/look-controls.js; this has
-// the Reset to defaults button and the note shown when blips can't
-// work on this system.
+// The Blip page: how a blip looks and where it shows. The controls
+// themselves are in controls/ (shapes, colors, sliders, apps); this has the taskbar warning, Reset to defaults and the
+// note shown when blips can't work on this system.
 // ============================================================
 
-import { $, $$, app, invoke, render, status } from '../state.js';
+import { $, $$, app, invoke, onRender, render, status } from '../state.js';
 import { confirmAction } from '../components/dialog.js';
 
-// The note about the taskbar and Start menu is about Windows only.
-for (const el of $$('[data-windows-only]')) el.hidden = !navigator.userAgent.includes('Windows');
+// Windows only, and only while blips are switched on for the taskbar: then it
+// says why they'll show up underneath it.
+const windows = navigator.userAgent.includes('Windows');
+onRender((state) => {
+  for (const el of $$('[data-taskbar-warning]')) el.hidden = !(windows && !state.settings.skipTaskbar);
+});
 
 const reason = await invoke('blip_status');
 for (const el of $$('[data-unsupported]')) {
@@ -21,7 +24,7 @@ for (const el of $$('[data-unsupported]')) {
 $('#reset-look').addEventListener('click', async () => {
   const ok = await confirmAction({
     title: 'Reset to defaults?',
-    text: 'The shape, color, sizes and the "Don\'t show blips" choices go back to how Blip comes.',
+    text: 'All settings on this page go back to their defaults.',
     action: 'Reset',
   });
   if (!ok) return;

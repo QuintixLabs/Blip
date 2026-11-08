@@ -11,7 +11,10 @@ addEventListener(
   'keydown',
   (e) => {
     const ctrl = e.ctrlKey || e.metaKey;
-    if (BLOCKED_KEYS.has(e.key) || (ctrl && BLOCKED_CTRL.has(e.key.toLowerCase()))) e.preventDefault();
+    const key = e.key.toLowerCase();
+    // Ctrl+A still selects everything inside a text box.
+    const inField = e.target.closest?.('input, textarea') && key === 'a';
+    if (BLOCKED_KEYS.has(e.key) || (ctrl && BLOCKED_CTRL.has(key) && !inField)) e.preventDefault();
   },
   true,
 );

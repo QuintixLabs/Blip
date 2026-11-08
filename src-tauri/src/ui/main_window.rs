@@ -4,7 +4,10 @@
 // title bar to the theme.
 // ============================================================
 
-use std::thread;
+use std::{
+    sync::atomic::{AtomicBool, Ordering},
+    thread,
+};
 use tauri::{window::Color, AppHandle, Emitter, Manager, Theme, WebviewWindow};
 
 use super::{builder, logo};
@@ -41,12 +44,21 @@ pub fn toggle_async(app: &AppHandle) {
     let app = app.clone();
     thread::spawn(move || match window(&app) {
         Some(window) if window.is_visible().unwrap_or(false) && !window.is_minimized().unwrap_or(false) => {
+            CLOSED_FROM_TRAY.store(true, Ordering::Relaxed);
             let _ = window.close();
         }
         _ => {
             let _ = open(&app);
         }
     });
+}
+
+/// Set when the tray icon closes the window: that hides it, even with Close to tray off.
+static CLOSED_FROM_TRAY: AtomicBool = AtomicBool::new(false);
+
+/// Whether Blip keeps running once its window is closed.
+pub fn stays_in_tray(app: &AppHandle) -> bool {
+    CLOSED_FROM_TRAY.swap(false, Ordering::Relaxed) || app.state::<Store>().get().settings.close_to_tray
 }
 
 pub fn is_visible(app: &AppHandle) -> bool {
@@ -86,7 +98,10 @@ fn open_on(app: &AppHandle, page: Option<&str>) -> tauri::Result<()> {
         .build()?;
 
     logo::set_window_icon(&window);
-    Ok(())
+    // Opened from the tray or a second start, Blip isn't the app in front, and
+    // Windows would leave a new window behind the others with only a taskbar
+    // button. Asking for focus brings it to the front.
+    window.set_focus()
 }
 
 // ------------------------------------------------------------

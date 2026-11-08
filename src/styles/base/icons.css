@@ -18,12 +18,18 @@
    Interface (assets/icons/ui)
    ------------------------------------------------------------ */
 
+.icon-app { --icon: url("../../assets/icons/ui/app-window.svg"); }
 .icon-alert { --icon: url("../../assets/icons/ui/alert.svg"); }
 .icon-check { --icon: url("../../assets/icons/ui/check.svg"); }
 .icon-click { --icon: url("../../assets/icons/ui/click.svg"); }
 .icon-dark { --icon: url("../../assets/icons/ui/dark.svg"); }
 .icon-folder { --icon: url("../../assets/icons/ui/folder.svg"); }
 .icon-light { --icon: url("../../assets/icons/ui/light.svg"); }
+.icon-mouse-left { --icon: url("../../assets/icons/ui/mouse-left-click.svg"); }
+.icon-mouse-middle { --icon: url("../../assets/icons/ui/mouse-middle-click.svg"); }
+.icon-mouse-right { --icon: url("../../assets/icons/ui/mouse-right-click.svg"); }
+.icon-search { --icon: url("../../assets/icons/ui/search.svg"); }
+.icon-x { --icon: url("../../assets/icons/ui/x.svg"); }
 .icon-monitor { --icon: url("../../assets/icons/ui/monitor.svg"); }
 .icon-panel-close { --icon: url("../../assets/icons/ui/panel-left-close.svg"); }
 .icon-panel-open { --icon: url("../../assets/icons/ui/panel-left-open.svg"); }

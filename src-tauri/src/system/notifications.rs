@@ -6,8 +6,14 @@
 
 use tauri::{AppHandle, Manager};
 
-/// Update news. These stay in the notification center.
+use crate::app::settings::Store;
+
+/// Update news. These stay in the notification center. Nothing shows while
+/// Notifications is off in Settings.
 pub fn info(app: &AppHandle, title: &str, body: &str) {
+    if !app.state::<Store>().get().settings.notifications {
+        return;
+    }
     let app_id = app_id(app);
     let (title, body) = (title.to_owned(), body.to_owned());
     // Off the UI thread: talking to the notification service can take a moment.

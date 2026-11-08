@@ -37,27 +37,6 @@ npm run build
 
 It ends up in `src-tauri/target/release/bundle/`. At the very end you'll see a signing error. That's normal: only maintainers have the update key, and the installer still works.
 
-## Where things are
-
-| Folder | What's in it |
-|---|---|
-| `src/js/app/` | The window: `pages/` and `components/` |
-| `src/styles/` | The CSS, in the same layout as the JS |
-| `src/assets/` | Fonts, icons, logos |
-| `src-tauri/src/blip/` | The blip itself: watching clicks, the rules, drawing |
-| `src-tauri/src/` | The rest of the Rust part: `app/`, `ui/`, `system/` |
-| `src-tauri/icons/` | `app/` is the app icon, `runtime/` the window and tray icons |
-
-Every file starts with a short note saying what it does.
-
-To make a new app icon from a logo:
-
-```sh
-npx tauri icon your-logo.svg -o src-tauri/icons/app
-```
-
-Then delete what we don't use: the `android/` and `ios/` folders, and the `Square…Logo.png`, `StoreLogo.png`, `64x64.png` and `icon.png` files.
-
 ## Your settings
 
 Everything is saved in `blip.json`. **Settings → Open settings folder** takes you there.

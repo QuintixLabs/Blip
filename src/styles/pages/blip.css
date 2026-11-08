@@ -1,7 +1,8 @@
 /* ============================================================
    blip.css
-   The Blip page, plus the note shown when blips can't work on this
-   system (also on the welcome screen).
+   The Blip page: the mouse button rows, the taskbar warning, and the
+   note shown when blips can't work on this system (also on the
+   welcome screen).
    ============================================================ */
 
 .page-hint {
@@ -28,4 +29,77 @@
 
 .notice[hidden] {
   display: none;
+}
+
+/* ------------------------------------------------------------
+   Mouse buttons: name and icon, then that button's colors and switch
+   ------------------------------------------------------------ */
+
+.button-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.button-name .icon {
+  width: 18px;
+  height: 18px;
+  color: var(--muted);
+}
+
+.button-controls {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.swatches-small {
+  flex-wrap: nowrap;
+  gap: 6px;
+}
+
+.swatches-small .swatch {
+  width: 20px;
+  height: 20px;
+}
+
+/* A button that's switched off: its colors fade back until it's on again. */
+.button-row:has(.toggle[aria-checked="false"]) .swatches {
+  opacity: 0.4;
+}
+
+/* ------------------------------------------------------------
+   Show on → Taskbar: the warning under it (Windows only)
+   ------------------------------------------------------------ */
+
+.row-warning {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  color: var(--warning);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.row-warning[hidden] {
+  display: none;
+}
+
+/* The switch stays level with the title and hint, whether the warning shows or not. */
+.row-with-warning {
+  align-items: flex-start;
+}
+
+.row-with-warning .toggle {
+  margin-top: 7px;
+}
+
+/* A triangle looks heavier at the bottom, so its base sits on the text's
+   baseline; and a little in from the edge. */
+.row-warning .icon {
+  width: 14px;
+  height: 14px;
+  margin-left: 2px;
+  transform: translateY(-2px);
 }

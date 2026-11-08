@@ -107,6 +107,11 @@ main:has(.welcome:not([hidden])) {
   margin-top: 28px;
 }
 
+/* The hello step: Get started close under the text, like XPicker's. */
+.welcome.is-intro .step-actions {
+  margin-top: 8px;
+}
+
 .step-actions .btn {
   width: 160px;
   height: 42px;

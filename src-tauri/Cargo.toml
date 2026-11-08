@@ -19,6 +19,7 @@ tauri-plugin-opener = "2.7.2"
 tauri-plugin-autostart = "2.7.0"
 # Draws the blip shapes (smooth edges), the same on every system.
 tiny-skia = "0.11.4"
+tauri-plugin-dialog = "2"
 
 # Small, fast release binary
 [profile.release]
@@ -36,6 +37,8 @@ windows = { version = "0.62.2", features = [
     "Win32_Foundation",
     "Win32_Graphics_Dwm",
     "Win32_Graphics_Gdi",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Com",
     "Win32_System_LibraryLoader",
     "Win32_System_Registry",
     "Win32_System_Threading",

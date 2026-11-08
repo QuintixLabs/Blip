@@ -9,10 +9,14 @@
     <link rel="stylesheet" href="styles/base/layout.css" />
     <link rel="stylesheet" href="styles/components/buttons.css" />
     <link rel="stylesheet" href="styles/components/controls.css" />
-    <link rel="stylesheet" href="styles/components/look-controls.css" />
     <link rel="stylesheet" href="styles/components/sidebar.css" />
     <link rel="stylesheet" href="styles/components/update-bar.css" />
     <link rel="stylesheet" href="styles/components/dialog.css" />
+    <link rel="stylesheet" href="styles/controls/shapes.css" />
+    <link rel="stylesheet" href="styles/controls/colors.css" />
+    <link rel="stylesheet" href="styles/controls/sliders.css" />
+    <link rel="stylesheet" href="styles/controls/try-box.css" />
+    <link rel="stylesheet" href="styles/controls/apps.css" />
     <link rel="stylesheet" href="styles/pages/welcome.css" />
     <link rel="stylesheet" href="styles/pages/blip.css" />
     <link rel="stylesheet" href="styles/pages/settings.css" />
@@ -59,7 +63,7 @@
           <div class="step" data-step="1" hidden>
             <div class="step-icon badge"><i class="icon icon-click"></i></div>
             <h1>Make it yours</h1>
-            <p class="lead">Pick a shape and a color. You can fine-tune the rest later in Blip.</p>
+            <p class="lead">Pick a shape and a color. You can change the rest later in Blip.</p>
             <div class="step-body">
               <div class="group">
                 <div class="row">
@@ -68,7 +72,7 @@
                 </div>
                 <div class="row">
                   <div class="row-title">Color</div>
-                  <div class="swatches" data-colors></div>
+                  <div class="swatches" data-colors="color"></div>
                 </div>
               </div>
               <div class="try" id="try"><canvas></canvas><span>Click here to see your blip</span></div>
@@ -103,87 +107,116 @@
             <div class="segmented shapes" data-shapes></div>
           </div>
           <div class="row">
-            <div class="row-title">Color</div>
-            <div class="swatches" data-colors></div>
-          </div>
-          <div class="row">
             <div>
               <div class="row-title">Opacity</div>
-              <div class="row-hint">How strong it starts</div>
+              <div class="row-hint">How visible it is</div>
             </div>
             <div class="slider"><input type="range" data-field="opacity" min="5" max="100" step="5" /><output data-unit="%"></output></div>
           </div>
         </div>
 
-        <h3 class="section">Size and speed</h3>
+        <h3 class="section">Mouse buttons</h3>
+        <div class="group">
+          <div class="row button-row">
+            <div class="button-name"><i class="icon icon-mouse-left"></i><span class="row-title">Left click</span></div>
+            <div class="button-controls">
+              <div class="swatches swatches-small" data-colors="color"></div>
+              <button class="toggle" role="switch" data-field="leftClick"></button>
+            </div>
+          </div>
+          <div class="row button-row">
+            <div class="button-name"><i class="icon icon-mouse-right"></i><span class="row-title">Right click</span></div>
+            <div class="button-controls">
+              <div class="swatches swatches-small" data-colors="rightColor"></div>
+              <button class="toggle" role="switch" data-field="rightClick"></button>
+            </div>
+          </div>
+          <div class="row button-row">
+            <div class="button-name"><i class="icon icon-mouse-middle"></i><span class="row-title">Middle click</span></div>
+            <div class="button-controls">
+              <div class="swatches swatches-small" data-colors="middleColor"></div>
+              <button class="toggle" role="switch" data-field="middleClick"></button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="section">Animation</h3>
         <div class="group">
           <div class="row">
             <div>
               <div class="row-title">Start size</div>
-              <div class="row-hint">How big it is when it appears</div>
+              <div class="row-hint">Size when you click</div>
             </div>
             <div class="slider"><input type="range" data-field="startSize" min="2" max="150" step="1" /><output data-unit=" px"></output></div>
           </div>
           <div class="row">
             <div>
               <div class="row-title">End size</div>
-              <div class="row-hint">How big it grows</div>
+              <div class="row-hint">Size it grows to</div>
             </div>
             <div class="slider"><input type="range" data-field="endSize" min="2" max="200" step="1" /><output data-unit=" px"></output></div>
           </div>
           <div class="row">
             <div>
               <div class="row-title">Speed</div>
-              <div class="row-hint">How quickly it grows and fades</div>
+              <div class="row-hint">How fast it plays</div>
             </div>
             <div class="slider"><input type="range" data-field="speed" min="1" max="10" step="1" /><output></output></div>
           </div>
           <div class="row">
             <div>
               <div class="row-title">Fade starts</div>
-              <div class="row-hint">How far through it starts fading out</div>
+              <div class="row-hint">When it starts fading</div>
             </div>
             <div class="slider"><input type="range" data-field="fadeStart" min="0" max="90" step="5" /><output data-unit="%"></output></div>
           </div>
         </div>
 
-        <h3 class="section">Where blips show</h3>
+        <h3 class="section">Show on</h3>
         <div class="group">
           <div class="row">
             <div>
-              <div class="row-title">On text</div>
-              <div class="row-hint">When you type or select text (the text cursor is showing)</div>
+              <div class="row-title">Text</div>
+              <div class="row-hint">Text you type or select</div>
             </div>
             <button class="toggle" role="switch" data-field="skipTextCursor" data-invert></button>
           </div>
           <div class="row">
             <div>
-              <div class="row-title">On links</div>
-              <div class="row-hint">When the hand cursor is showing</div>
+              <div class="row-title">Links</div>
+              <div class="row-hint">Things with a hand cursor</div>
             </div>
             <button class="toggle" role="switch" data-field="skipLinkCursor" data-invert></button>
           </div>
-          <div class="row">
+          <div class="row row-with-warning">
             <div>
-              <div class="row-title">On the taskbar and Start menu</div>
-              <div class="row-hint">Clicks on the taskbar, Start, search and the notification panels</div>
-              <div class="row-warning" data-windows-only hidden><i class="icon icon-alert"></i>Windows keeps these above every app, so blips there show up underneath them.</div>
+              <div class="row-title">Taskbar</div>
+              <div class="row-hint">Taskbar and Start menu</div>
+              <div class="row-warning" data-taskbar-warning hidden><i class="icon icon-alert"></i>Blips show behind the taskbar on Windows.</div>
             </div>
             <button class="toggle" role="switch" data-field="skipTaskbar" data-invert></button>
           </div>
           <div class="row">
             <div>
-              <div class="row-title">In games</div>
-              <div class="row-hint">When a game hides or holds the cursor, or runs full screen</div>
+              <div class="row-title">Games</div>
+              <div class="row-hint">Inside games</div>
             </div>
             <button class="toggle" role="switch" data-field="skipGames" data-invert></button>
           </div>
+          <div class="row apps-row">
+            <div>
+              <div class="row-title">Apps</div>
+              <div class="row-hint">Blips show in every app except these</div>
+            </div>
+            <button id="choose-apps" class="btn btn-muted btn-sm">Choose apps</button>
+          </div>
+          <div class="app-chips" id="app-chips" hidden></div>
         </div>
-
         <div class="footer">
           <span></span>
           <button id="reset-look" class="btn btn-ghost"><i class="icon icon-rotate-ccw"></i>Reset to defaults</button>
-        </div>      </section>
+        </div>
+      </section>
 
       <section id="settings" class="view" hidden>
         <header class="page-head">
@@ -201,13 +234,30 @@
           </div>
           <div class="row">
             <div>
-              <div class="row-title">Start with computer</div>
-              <div class="row-hint">Start Blip in the tray when your computer starts</div>
+              <div class="row-title">Notifications</div>
+              <div class="row-hint">Show notifications from Blip</div>
             </div>
-            <button class="toggle" role="switch" data-field="startWithComputer"></button>
+            <button class="toggle" role="switch" data-field="notifications"></button>
           </div>
         </div>
 
+        <h3 class="section">Startup options</h3>
+        <div class="group">
+          <div class="row">
+            <div>
+              <div class="row-title">Start with computer</div>
+              <div class="row-hint">Open Blip in the tray when your computer starts</div>
+            </div>
+            <button class="toggle" role="switch" data-field="startWithComputer"></button>
+          </div>
+          <div class="row">
+            <div>
+              <div class="row-title">Close to tray</div>
+              <div class="row-hint">Keep Blip running when you close it, so blips keep showing</div>
+            </div>
+            <button class="toggle" role="switch" data-field="closeToTray"></button>
+          </div>
+        </div>
         <h3 class="section">Updates</h3>
         <div class="group">
           <div class="row">
@@ -252,8 +302,23 @@
       </section>
     </main>
 
-    <dialog id="confirm" class="dialog">
+    <dialog id="apps-dialog" class="dialog apps-dialog">
       <form method="dialog">
+        <p class="dialog-title">Skip these apps</p>
+        <p class="dialog-text">Blips won't show in the apps you tick.</p>
+        <label class="apps-search"><i class="icon icon-search"></i><input type="text" placeholder="Search" spellcheck="false" autocomplete="off" /></label>
+        <div class="apps-list" id="apps-list"></div>
+        <div class="dialog-actions apps-actions">
+          <button type="button" id="apps-browse" class="btn btn-ghost">Not in the list? Browse...</button>
+          <div class="apps-buttons">
+            <button value="done" class="btn btn-accent">Done</button>
+            <button value="cancel" class="btn btn-muted">Cancel</button>
+          </div>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="confirm" class="dialog">      <form method="dialog">
         <p id="confirm-title" class="dialog-title"></p>
         <p id="confirm-text" class="dialog-text"></p>
         <div class="dialog-actions">

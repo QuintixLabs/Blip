@@ -1,0 +1,16 @@
+/* ============================================================
+   shapes.css
+   The shape buttons (welcome screen and the Blip page).
+   ============================================================ */
+
+.shapes button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  padding: 0;
+}
+
+.shapes svg {
+  width: 15px;
+  height: 15px;
+}

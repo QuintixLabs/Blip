@@ -17,6 +17,17 @@
   background: transparent;
 }
 
+/* Text boxes (the app search) are the exception: their text can be selected. */
+input,
+input::selection {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+input::selection {
+  background: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
 html,
 body {
   margin: 0;

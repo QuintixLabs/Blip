@@ -1,6 +1,6 @@
 // ============================================================
 // windows.rs
-// Windows: watches left clicks everywhere, checks the rules, and
+// Windows: watches left, right and middle clicks everywhere, checks the rules, and
 // shows each blip in a small see-through window that clicks pass
 // through.
 // ============================================================
@@ -47,14 +47,14 @@ use windows::{
                 SetWindowsHookExW, ShowWindow, TranslateMessage, UpdateLayeredWindow, WindowFromPoint, CURSORINFO,
                 CURSOR_SHOWING, GA_ROOT, HCURSOR, HWND_TOPMOST, IDC_HAND, IDC_IBEAM, MSG, MSLLHOOKSTRUCT, PM_REMOVE,
                 SM_CXVIRTUALSCREEN, SM_CYVIRTUALSCREEN, SWP_NOACTIVATE, SWP_NOMOVE, SWP_NOSIZE, SW_HIDE, SW_SHOWNOACTIVATE,
-                ULW_ALPHA, WH_MOUSE_LL, WINDOW_EX_STYLE, WM_LBUTTONDOWN, WM_LBUTTONUP, WNDCLASSW, WS_EX_LAYERED,
+                ULW_ALPHA, WH_MOUSE_LL, WINDOW_EX_STYLE, WM_LBUTTONDOWN, WM_LBUTTONUP, WM_MBUTTONDOWN, WM_MBUTTONUP, WM_RBUTTONDOWN, WM_RBUTTONUP, WNDCLASSW, WS_EX_LAYERED,
                 WS_EX_NOACTIVATE, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_EX_TRANSPARENT, WS_POPUP,
             },
         },
     },
 };
 
-use super::{draw, style::Style};
+use super::{draw, style::Style, Button};
 
 /// Moving further than this (at 100 % scaling) while the button is down is a
 /// drag, not a click: no blip.
@@ -62,7 +62,7 @@ const DRAG_PX: f64 = 40.0;
 /// Most blips at once; a new click past that reuses the oldest window.
 const MAX_BLIPS: usize = 16;
 
-static CLICKS: OnceLock<Mutex<Sender<POINT>>> = OnceLock::new();
+static CLICKS: OnceLock<Mutex<Sender<(POINT, Button)>>> = OnceLock::new();
 
 pub fn start() {
     let (tx, rx) = mpsc::channel();
@@ -78,7 +78,7 @@ pub fn unsupported_reason() -> Option<String> {
 }
 
 // ------------------------------------------------------------
-// Watching clicks
+// Watching clicks (left, right and middle)
 // ------------------------------------------------------------
 
 /// The click being held down right now.
@@ -89,7 +89,8 @@ struct Press {
 }
 
 thread_local! {
-    static PRESS: RefCell<Option<Press>> = const { RefCell::new(None) };
+    /// One per button: left, right, middle.
+    static PRESS: RefCell<[Option<Press>; 3]> = const { RefCell::new([None, None, None]) };
 }
 
 fn watch_clicks() {
@@ -111,21 +112,26 @@ fn watch_clicks() {
 unsafe extern "system" fn mouse_hook(code: i32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     if code >= 0 && super::active() {
         let info = &*(lparam.0 as *const MSLLHOOKSTRUCT);
-        match wparam.0 as u32 {
-            WM_LBUTTONDOWN => {
-                let skip = skipped_on_press();
-                PRESS.with(|p| *p.borrow_mut() = Some(Press { at: info.pt, skip }));
-            }
-            WM_LBUTTONUP => {
-                if let Some(press) = PRESS.with(|p| p.borrow_mut().take()) {
-                    if !press.skip && !dragged(press.at, info.pt) && !skipped_on_release(info.pt) {
-                        if let Some(tx) = CLICKS.get() {
-                            let _ = tx.lock().unwrap().send(info.pt);
-                        }
+        let (button, down) = match wparam.0 as u32 {
+            WM_LBUTTONDOWN => (Some(Button::Left), true),
+            WM_LBUTTONUP => (Some(Button::Left), false),
+            WM_RBUTTONDOWN => (Some(Button::Right), true),
+            WM_RBUTTONUP => (Some(Button::Right), false),
+            WM_MBUTTONDOWN => (Some(Button::Middle), true),
+            WM_MBUTTONUP => (Some(Button::Middle), false),
+            _ => (None, false),
+        };
+        if let Some(button) = button {
+            if down {
+                let skip = skipped_on_press(info.pt);
+                PRESS.with(|p| p.borrow_mut()[button as usize] = Some(Press { at: info.pt, skip }));
+            } else if let Some(press) = PRESS.with(|p| p.borrow_mut()[button as usize].take()) {
+                if !press.skip && !dragged(press.at, info.pt) && !skipped_on_release(info.pt) {
+                    if let Some(tx) = CLICKS.get() {
+                        let _ = tx.lock().unwrap().send((info.pt, button));
                     }
                 }
             }
-            _ => {}
         }
     }
     CallNextHookEx(None, code, wparam, lparam)
@@ -140,7 +146,10 @@ fn dragged(from: POINT, to: POINT) -> bool {
 // The rules
 // ------------------------------------------------------------
 
-fn skipped_on_press() -> bool {
+fn skipped_on_press(at: POINT) -> bool {
+    if in_skipped_app(at) {
+        return true;
+    }
     let rules = super::rules();
     let cursor = current_cursor();
     if rules.text_cursor && cursor.is_some_and(|c| Some(c) == system_cursor(IDC_IBEAM)) {
@@ -213,6 +222,23 @@ fn on_system_ui(at: POINT) -> bool {
     }
 }
 
+/// The program under the cursor is on the "skip these apps" list.
+fn in_skipped_app(at: POINT) -> bool {
+    let skipped = super::skipped_apps();
+    if skipped.is_empty() {
+        return false;
+    }
+    unsafe {
+        let hwnd = WindowFromPoint(at);
+        if hwnd.0.is_null() {
+            return false;
+        }
+        let root = GetAncestor(hwnd, GA_ROOT);
+        let top = if root.0.is_null() { hwnd } else { root };
+        program_of(top).is_some_and(|p| skipped.contains(&p))
+    }
+}
+
 /// The file name of the program that owns `hwnd`, lowercase ("searchhost.exe").
 fn program_of(hwnd: HWND) -> Option<String> {
     unsafe {
@@ -230,6 +256,7 @@ fn program_of(hwnd: HWND) -> Option<String> {
         path.rsplit('\\').next().map(|name| name.to_lowercase())
     }
 }
+
 /// The screen's scaling where `at` is: 1.0 at 100 %, 1.5 at 150 %.
 fn scale_at(at: POINT) -> f64 {
     unsafe {
@@ -284,13 +311,13 @@ impl Blips {
         }
     }
 
-    fn run(mut self, clicks: Receiver<POINT>) {
+    fn run(mut self, clicks: Receiver<(POINT, Button)>) {
         loop {
             self.pump_messages();
             let playing = self.slots.iter().any(|s| s.playing.is_some());
             if playing {
-                while let Ok(at) = clicks.try_recv() {
-                    self.play(at);
+                while let Ok((at, button)) = clicks.try_recv() {
+                    self.play(at, button);
                 }
                 self.draw_frame();
                 // Wait for the next screen refresh, so blips move smoothly.
@@ -299,7 +326,7 @@ impl Blips {
                 }
             } else {
                 match clicks.recv_timeout(Duration::from_millis(250)) {
-                    Ok(at) => self.play(at),
+                    Ok((at, button)) => self.play(at, button),
                     Err(RecvTimeoutError::Timeout) => {}
                     Err(RecvTimeoutError::Disconnected) => return,
                 }
@@ -319,9 +346,9 @@ impl Blips {
         }
     }
 
-    /// Starts a blip centered on `click`.
-    fn play(&mut self, click: POINT) {
-        let style = super::style();
+    /// Starts a blip centered on `click`, in the color of the button that made it.
+    fn play(&mut self, click: POINT, button: Button) {
+        let Some(style) = super::style_for(button) else { return };
         let scale = scale_at(click) as f32;
         // Room for the biggest the blip gets, plus a pixel of soft edge all round.
         let side = ((style.largest() * scale).ceil() as u32 + 4).max(8);

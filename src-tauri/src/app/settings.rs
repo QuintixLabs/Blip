@@ -30,8 +30,15 @@ pub struct Settings {
     // The blip
     /// "circle", "ring", "square", "hexagon" or "diamond".
     pub shape: String,
-    /// "#RRGGBB".
+    /// Left click: on/off and its color ("#RRGGBB").
+    pub left_click: bool,
     pub color: String,
+    /// Right and middle click: off unless switched on, each with its own color,
+    /// so viewers of a recording can tell the buttons apart.
+    pub right_click: bool,
+    pub right_color: String,
+    pub middle_click: bool,
+    pub middle_color: String,
     /// Size when it appears and when it's done growing, in px.
     pub start_size: u32,
     pub end_size: u32,
@@ -47,11 +54,17 @@ pub struct Settings {
     pub skip_link_cursor: bool,
     pub skip_taskbar: bool,
     pub skip_games: bool,
+    /// Programs where blips never show, matched by file name ("photoshop.exe").
+    /// No folders are saved, so the list works for any user and on any PC.
+    pub skip_apps: Vec<SkipApp>,
 
     // General
     /// "system", "light" or "dark".
     pub theme: String,
+    pub notifications: bool,
     pub start_with_computer: bool,
+    /// Off: closing the window quits Blip (and its blips).
+    pub close_to_tray: bool,
     pub auto_update: bool,
     /// Show the welcome screen on the next start (true until it's been gone through).
     pub show_welcome: bool,
@@ -61,7 +74,12 @@ impl Default for Settings {
     fn default() -> Self {
         Self {
             shape: "circle".into(),
+            left_click: true,
             color: "#000000".into(),
+            right_click: false,
+            right_color: "#FFB020".into(),
+            middle_click: false,
+            middle_color: "#A78BFA".into(),
             start_size: 15,
             end_size: 40,
             opacity: 25,
@@ -71,12 +89,25 @@ impl Default for Settings {
             skip_link_cursor: false,
             skip_taskbar: true,
             skip_games: true,
+            skip_apps: Vec::new(),
             theme: "system".into(),
+            notifications: true,
             start_with_computer: true,
+            close_to_tray: true,
             auto_update: true,
             show_welcome: true,
         }
     }
+}
+
+/// One program on the "skip these apps" list.
+#[derive(Clone, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SkipApp {
+    /// Shown in the window ("Photoshop").
+    pub name: String,
+    /// What's matched, lowercase ("photoshop.exe").
+    pub exe: String,
 }
 
 impl Settings {
@@ -88,11 +119,23 @@ impl Settings {
         if parse_hex(&self.color).is_none() {
             self.color = "#000000".into();
         }
+        if parse_hex(&self.right_color).is_none() {
+            self.right_color = "#FFB020".into();
+        }
+        if parse_hex(&self.middle_color).is_none() {
+            self.middle_color = "#A78BFA".into();
+        }
         self.start_size = self.start_size.clamp(2, 400);
         self.end_size = self.end_size.clamp(2, 400);
         self.opacity = self.opacity.clamp(1, 100);
         self.speed = self.speed.clamp(1, 10);
         self.fade_start = self.fade_start.min(90);
+        for app in &mut self.skip_apps {
+            app.exe = app.exe.trim().to_lowercase();
+        }
+        self.skip_apps.retain(|app| !app.exe.is_empty());
+        let mut seen = Vec::new();
+        self.skip_apps.retain(|app| if seen.contains(&app.exe) { false } else { seen.push(app.exe.clone()); true });
         if !matches!(self.theme.as_str(), "system" | "light" | "dark") {
             self.theme = "system".into();
         }

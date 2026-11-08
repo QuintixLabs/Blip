@@ -15,7 +15,7 @@ use crate::{
         updates,
     },
     blip,
-    system::startup,
+    system::{apps, startup},
     ui::main_window,
 };
 
@@ -49,15 +49,20 @@ pub async fn reset_settings(app: AppHandle, store: State<'_, Store>) -> Result<D
     save_settings(app, store, settings).await
 }
 
-/// The Blip page's "Reset to defaults": the look and the "Don't show blips"
-/// rules go back to how Blip comes. Theme, startup and updates stay.
+/// The Blip page's "Reset to defaults": everything on that page goes back to
+/// how Blip comes. The Settings page's choices stay.
 #[tauri::command]
 pub async fn reset_look(app: AppHandle, store: State<'_, Store>) -> Result<Data, String> {
     let d = Settings::default();
     let current = store.get().settings;
     let settings = Settings {
         shape: d.shape,
+        left_click: d.left_click,
         color: d.color,
+        right_click: d.right_click,
+        right_color: d.right_color,
+        middle_click: d.middle_click,
+        middle_color: d.middle_color,
         start_size: d.start_size,
         end_size: d.end_size,
         opacity: d.opacity,
@@ -67,9 +72,29 @@ pub async fn reset_look(app: AppHandle, store: State<'_, Store>) -> Result<Data,
         skip_link_cursor: d.skip_link_cursor,
         skip_taskbar: d.skip_taskbar,
         skip_games: d.skip_games,
+        skip_apps: d.skip_apps,
         ..current
     };
     save_settings(app, store, settings).await
+}
+
+/// "Skip these apps": installed and open programs, with names and icons.
+#[tauri::command]
+pub async fn list_apps() -> Vec<apps::AppInfo> {
+    tauri::async_runtime::spawn_blocking(apps::all).await.unwrap_or_default()
+}
+
+/// "Browse...": a program picked from disk; None when the picker is cancelled.
+#[tauri::command]
+pub async fn browse_app(app: AppHandle) -> Option<apps::AppInfo> {
+    use tauri_plugin_dialog::DialogExt;
+    let mut picker = app.dialog().file().set_title("Choose an app");
+    if cfg!(windows) {
+        picker = picker.add_filter("Apps", &["exe"]);
+    }
+    let path = picker.blocking_pick_file()?.into_path().ok()?;
+    let path = path.to_string_lossy().into_owned();
+    tauri::async_runtime::spawn_blocking(move || apps::info_for(&path)).await.ok()
 }
 
 /// None when blips work on this system; otherwise why not, for the window to show.

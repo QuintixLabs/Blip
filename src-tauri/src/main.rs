@@ -25,6 +25,7 @@ fn main() {
         .plugin(startup::plugin())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_dialog::init())
         .manage(updates::Pending::default())
         .setup(|app| {
             #[cfg(target_os = "macos")]
@@ -50,6 +51,8 @@ fn main() {
             commands::reset_settings,
             commands::reset_look,
             commands::blip_status,
+            commands::list_apps,
+            commands::browse_app,
             commands::check_update,
             commands::install_update,
             commands::pending_update,
@@ -61,9 +64,10 @@ fn main() {
 
     app.run(|app, event| {
         if let RunEvent::ExitRequested { code, api, .. } = event {
-            // Last window closed: Blip keeps running in the tray, that's its job.
+            // Last window closed: Blip keeps running in the tray, that's its job,
+            // unless Close to tray is off (closing from the tray icon still keeps it).
             // Exit from the tray menu (code is set) quits.
-            if code.is_none() {
+            if code.is_none() && main_window::stays_in_tray(app) {
                 api.prevent_exit();
             } else {
                 updates::install_on_exit(app);

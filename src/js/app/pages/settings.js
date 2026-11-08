@@ -27,7 +27,7 @@ function renderChoices(state) {
       .join('');
   }
 
-  // data-invert: the switch shows the opposite of the setting ("Where blips show"
+  // data-invert: the switch shows the opposite of the setting ("Show on"
   // switches are on when blips show, while the setting says where they're skipped).
   for (const el of $$('.toggle')) {
     const value = Boolean(state.settings[el.dataset.field]);
@@ -57,7 +57,7 @@ for (const el of $$('.toggle')) {
 $('#reset').addEventListener('click', async () => {
   const ok = await confirmAction({
     title: 'Reset all settings?',
-    text: 'The look, the rules and everything else go back to their defaults.',
+    text: 'All settings go back to their defaults.',
     action: 'Reset',
   });
   if (!ok) return;
