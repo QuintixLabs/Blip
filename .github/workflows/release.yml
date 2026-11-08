@@ -1,4 +1,5 @@
-# When the version in package.json changes on main, makes a DRAFT GitHub Release
+# When the version in package.json changes on main (master on the official repo),
+# makes a DRAFT GitHub Release
 # for it, with notes built from the commits, then builds Windows, macOS and Linux into it.
 # Nothing reaches users until you click "Publish release", which also creates the tag.
 # Actions → Release → Run workflow builds again with the same version.
@@ -14,7 +15,7 @@ name: Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, master]
     paths: [package.json]
   workflow_dispatch:
 

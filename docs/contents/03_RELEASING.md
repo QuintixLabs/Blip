@@ -9,6 +9,8 @@ This page is for maintainers. If you're contributing, you don't need any of this
 | `dev` | Your own work in progress, messy is fine |
 | `main` | Finished work |
 
+On the official repo (QuintixLabs/Blip) the finished-work branch is called `master`; the release workflow listens to both.
+
 Pushing to `dev` or `main` never reaches users. Installed copies of Blip only get what you **publish** as a release.
 
 A release only starts when the version in `package.json` changes on `main`. Anything else you push to `main` is safe.
