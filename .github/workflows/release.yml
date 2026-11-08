@@ -1,6 +1,7 @@
 # When the version in package.json changes on main, makes a DRAFT GitHub Release
 # for it, with notes built from the commits, then builds Windows, macOS and Linux into it.
 # Nothing reaches users until you click "Publish release", which also creates the tag.
+# Actions → Release → Run workflow builds again with the same version.
 # See docs/contents/03_RELEASING.md.
 #
 # Needs one repository secret:
