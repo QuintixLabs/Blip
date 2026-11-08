@@ -104,7 +104,7 @@ main:has(.welcome:not([hidden])) {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-top: 8px;
+  margin-top: 28px;
 }
 
 .step-actions .btn {
