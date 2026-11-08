@@ -69,6 +69,7 @@ pub fn watch(events: Sender<Input>) {
                     continue;
                 }
                 open.lock().unwrap().insert(path.clone());
+                eprintln!("Blip: reading clicks from {}", device.name().unwrap_or("a mouse"));
                 let (open, events) = (open.clone(), events.clone());
                 let _ = thread::Builder::new().name("mouse".into()).spawn(move || {
                     read(device, &events);

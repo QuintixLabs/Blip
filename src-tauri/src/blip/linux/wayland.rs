@@ -47,6 +47,11 @@ use crate::blip::{draw, style::Style, Button};
 /// is a drag, not a click: no blip.
 const DRAG: i64 = 60;
 
+/// BLIP_DEBUG=1 prints every click, for testing.
+fn debug() -> bool {
+    std::env::var_os("BLIP_DEBUG").is_some()
+}
+
 pub fn start(source: Source) {
     let (blips_tx, blips_rx) = mpsc::channel();
     thread::Builder::new()
@@ -95,6 +100,9 @@ fn watch_clicks(finder: &Finder, input: Receiver<Input>, play: impl Fn(f64, f64,
                     continue;
                 }
                 let Some(pointer) = finder.find() else { continue };
+                if debug() {
+                    eprintln!("Blip: click at {}, {} (pid {}, app {:?}, panel {})", pointer.x, pointer.y, pointer.pid, pointer.app, pointer.panel);
+                }
                 if crate::blip::rules().taskbar && pointer.panel {
                     continue;
                 }
@@ -186,7 +194,10 @@ impl Overlay {
             let inside = x >= ox as f64 && x < (ox + w) as f64 && y >= oy as f64 && y < (oy + h) as f64;
             inside.then_some((output, ox, oy, info.scale_factor.max(1)))
         });
-        let Some((output, ox, oy, scale)) = screen else { return };
+        let Some((output, ox, oy, scale)) = screen else {
+            eprintln!("Blip: no screen at {x}, {y}");
+            return;
+        };
 
         // Room for the biggest the blip gets, plus a pixel of soft edge all round.
         let side = (style.largest().ceil() as u32 + 4).max(8);

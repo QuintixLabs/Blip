@@ -71,11 +71,19 @@ static WAITING: Mutex<Option<Sender<Pointer>>> = Mutex::new(None);
 /// What the KWin script calls with its answer.
 struct Reporter;
 
+// Everything comes as text: KWin sends whole numbers as integers and others as
+// decimals, and D-Bus turns away a call whose types don't match exactly.
 #[zbus::interface(name = "com.quintixlabs.blip.Cursor")]
 impl Reporter {
-    fn report(&self, x: f64, y: f64, pid: f64, panel: bool, app: String) {
+    fn report(&self, x: String, y: String, pid: String, panel: String, app: String) {
+        let number = |text: &str| text.trim().parse::<f64>().ok();
+        let (Some(x), Some(y)) = (number(&x), number(&y)) else {
+            eprintln!("Blip: KWin sent a cursor position Blip can't read: {x}, {y}");
+            return;
+        };
+        let pointer = Pointer { x, y, pid: number(&pid).unwrap_or(0.0).max(0.0) as u32, app, panel: panel == "true" };
         if let Some(waiting) = WAITING.lock().unwrap().take() {
-            let _ = waiting.send(Pointer { x, y, pid: pid.max(0.0) as u32, app, panel });
+            let _ = waiting.send(pointer);
         }
     }
 }
@@ -109,19 +117,17 @@ const SCRIPT: &str = r#"
   var pid = found ? (found.pid || 0) : 0;
   var panel = found ? !!found.dock : false;
   var app = found ? String(found.desktopFileName || found.resourceClass || "") : "";
-  callDBus("__SERVICE__", "/Cursor", "__SERVICE__", "Report", p.x, p.y, pid, panel, app);
+  callDBus("__SERVICE__", "/Cursor", "__SERVICE__", "Report", String(p.x), String(p.y), String(pid), String(panel), app);
 })();
 "#;
 
 impl Kde {
     fn new() -> Option<Self> {
         let bus = zbus::blocking::connection::Builder::session()
-            .ok()?
-            .name(SERVICE)
-            .ok()?
-            .serve_at("/Cursor", Reporter)
-            .ok()?
-            .build()
+            .and_then(|b| b.name(SERVICE))
+            .and_then(|b| b.serve_at("/Cursor", Reporter))
+            .and_then(|b| b.build())
+            .map_err(|err| eprintln!("Blip: couldn't set up the KWin answer service: {err}"))
             .ok()?;
         let dir = std::env::var_os("XDG_RUNTIME_DIR").map(PathBuf::from).unwrap_or_else(std::env::temp_dir);
         let script = dir.join("blip-cursor.js");
@@ -141,12 +147,23 @@ impl Kde {
         // Each run is its own small script: load, run, then unload it again.
         let name = format!("blip-cursor-{}", self.count.fetch_add(1, Ordering::Relaxed));
         let path = self.script.to_string_lossy().into_owned();
-        let id: i32 = self.call("/Scripting", "org.kde.kwin.Scripting", "loadScript", &(path, name.clone()))?.body().deserialize().ok()?;
+        let Some(id) = self
+            .call("/Scripting", "org.kde.kwin.Scripting", "loadScript", &(path, name.clone()))
+            .and_then(|reply| reply.body().deserialize::<i32>().ok())
+        else {
+            eprintln!("Blip: KWin didn't load the cursor script");
+            return None;
+        };
         // Plasma 6 keeps scripts at /Scripting/Script<id>, Plasma 5 at /<id>.
-        if self.call(&format!("/Scripting/Script{id}"), "org.kde.kwin.Script", "run", &()).is_none() {
-            self.call(&format!("/{id}"), "org.kde.kwin.Script", "run", &());
+        if self.call(&format!("/Scripting/Script{id}"), "org.kde.kwin.Script", "run", &()).is_none()
+            && self.call(&format!("/{id}"), "org.kde.kwin.Script", "run", &()).is_none()
+        {
+            eprintln!("Blip: KWin didn't run the cursor script (id {id})");
         }
         let answer = rx.recv_timeout(Duration::from_millis(300)).ok();
+        if answer.is_none() {
+            eprintln!("Blip: no answer from the KWin cursor script");
+        }
         self.call("/Scripting", "org.kde.kwin.Scripting", "unloadScript", &(name,));
         answer
     }

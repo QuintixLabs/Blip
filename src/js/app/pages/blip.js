@@ -25,8 +25,11 @@ if (!windows) {
 // What works on this system
 // ------------------------------------------------------------
 
-/** Shows why blips can't work here, or the Allow button when they only need your OK. */
+/** Shows why blips can't work here, or the Allow button when they only need your OK.
+ *  Until then the welcome screen can't go on: without it there would be no blips. */
 function showNotice({ reason, needsAccess }, error = '') {
+  const waiting = !reason && needsAccess && !error.startsWith('Allowed');
+  document.documentElement.classList.toggle('needs-access', waiting);
   for (const el of $$('[data-unsupported]')) {
     el.hidden = !reason && !needsAccess;
     el.classList.toggle('notice-action', !reason && needsAccess);

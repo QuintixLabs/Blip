@@ -142,3 +142,10 @@ main:has(.welcome:not([hidden])) {
   width: 18px;
   background: var(--accent);
 }
+
+/* Linux on Wayland: the buttons wait until Blip may see clicks (the Allow
+   button above them). */
+.needs-access .welcome .step-actions,
+.needs-access .welcome .dots {
+  visibility: hidden;
+}
