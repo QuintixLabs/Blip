@@ -85,6 +85,10 @@ pub fn needs_access() -> bool {
     false
 }
 
+pub fn access_prompt() -> super::AccessPrompt {
+    super::AccessPrompt::NONE
+}
+
 pub fn allow_access() -> Result<(), String> {
     Ok(())
 }

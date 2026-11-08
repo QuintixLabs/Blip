@@ -8,7 +8,7 @@
 
 import { $, $$, app, invoke, onRender, render, status } from '../state.js';
 import { confirmAction } from '../components/dialog.js';
-import { morph, reveal } from '../components/reveal.js';
+import { reveal } from '../components/reveal.js';
 
 // Windows only, and only while blips are switched on for the taskbar: then it
 // says why they'll show up underneath it.
@@ -30,38 +30,56 @@ if (!windows) {
 // What works on this system
 // ------------------------------------------------------------
 
-/** Shows why blips can't work here, or the Allow button when they only need your OK.
+// If the check itself fails, carry on as if blips work: never leave the welcome stuck.
+const EVERYTHING = { text: true, links: true, taskbar: true, games: true, apps: true };
+const FALLBACK = { reason: null, needsAccess: false, features: EVERYTHING };
+const getInfo = () => invoke('blip_info').catch(() => FALLBACK);
+
+/** The note's content, built once: the text, the button, and a line for errors. */
+function accessNote(note, info) {
+  if (note.querySelector('[data-allow]')) return;
+  note.classList.add('notice-action');
+  note.innerHTML = `
+    <span class="notice-text"></span>
+    <button class="btn btn-accent btn-sm allow-button" data-allow>
+      <span class="when-ready"></span><span class="when-waiting">Waiting…</span>
+    </button>
+    <div class="reveal notice-error"><div class="reveal-inner"><span class="notice-error-text"></span></div></div>`;
+  note.querySelector('.notice-text').textContent = info.accessText;
+  note.querySelector('.when-ready').textContent = info.accessButton;
+}
+
+/** Shows why blips can't work here, or the button when they only need your OK.
  *  Until then the welcome screen can't go on: without it there would be no blips. */
-function showNotice({ reason, needsAccess }, error = '') {
+function showNotice(info, error = '') {
+  const { reason, needsAccess } = info;
   const waiting = !reason && needsAccess && !error.startsWith('Allowed');
   document.documentElement.classList.toggle('needs-access', waiting);
   // Faded out, and out of reach of the keyboard too.
   for (const el of $$('.welcome .step-actions')) el.inert = waiting;
 
-  for (const el of $$('[data-unsupported]')) {
-    const fill = () => {
-      el.classList.toggle('notice-action', !reason && needsAccess);
-      if (reason) {
-        el.textContent = reason;
-      } else if (needsAccess) {
-        el.innerHTML =
-          '<span>Blip needs your OK to see mouse clicks on this system. Your password is asked once.</span>' +
-          '<button class="btn btn-accent btn-sm" data-allow>Allow</button>' +
-          (error ? '<span class="notice-error"></span>' : '');
-        if (error) el.querySelector('.notice-error').textContent = error;
-      }
-    };
-    const show = Boolean(reason) || needsAccess;
-    // Already showing and still needed: ease to the new text. Otherwise open or close.
-    if (show && !el.hidden) morph(el, fill);
-    else if (show) fill();
-    reveal(el, show);
+  for (const wrap of $$('[data-unsupported]')) {
+    const note = wrap.querySelector('.notice');
+    if (reason) {
+      note.classList.remove('notice-action');
+      note.textContent = reason;
+    } else if (needsAccess) {
+      accessNote(note, info);
+      if (error) note.querySelector('.notice-error-text').textContent = error;
+      reveal(note.querySelector('.notice-error'), Boolean(error));
+    }
+    reveal(wrap, Boolean(reason) || needsAccess);
   }
 }
 
-// If the check itself fails, carry on as if blips work: never leave the welcome stuck.
-const EVERYTHING = { text: true, links: true, taskbar: true, games: true, apps: true };
-const info = await invoke('blip_info').catch(() => ({ reason: null, needsAccess: false, features: EVERYTHING }));
+function setWaiting(on) {
+  for (const button of $$('[data-allow]')) {
+    button.disabled = on;
+    button.classList.toggle('is-waiting', on);
+  }
+}
+
+const info = await getInfo();
 showNotice(info);
 // Known now: the welcome buttons may fade in (see welcome.css).
 document.documentElement.classList.remove('checking-blips');
@@ -75,20 +93,26 @@ if (!Object.values(info.features).some(Boolean)) {
   for (const el of $$('[data-feature-section]')) el.remove();
 }
 
+const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+
 document.addEventListener('click', async (e) => {
-  const button = e.target.closest('[data-allow]');
-  if (!button) return;
-  button.disabled = true;
-  button.textContent = 'Waiting…';
+  if (!e.target.closest('[data-allow]')) return;
+  setWaiting(true);
   let error = '';
   try {
     await invoke('blip_allow_access');
   } catch (err) {
     error = String(err);
   }
-  showNotice(await invoke('blip_info').catch(() => info), error);
+  let now = await getInfo();
+  // macOS: you switch it on in System Settings, so keep checking for a while.
+  for (let tries = 0; !error && now.needsAccess && now.accessWaits && tries < 150; tries++) {
+    await sleep(1500);
+    now = await getInfo();
+  }
+  showNotice(now, error);
+  setWaiting(false);
 });
-
 $('#reset-look').addEventListener('click', async () => {
   const ok = await confirmAction({
     title: 'Reset to defaults?',

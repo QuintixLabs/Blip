@@ -709,8 +709,91 @@ mod platform {
     }
 }
 
-/// macOS: blips don't show there yet, so there's nothing to list.
-#[cfg(not(any(windows, target_os = "linux")))]
+/// macOS: the apps in the Applications folders, with their names from each
+/// app's Info.plist and the icons Finder shows.
+#[cfg(target_os = "macos")]
+mod platform {
+    use std::path::{Path, PathBuf};
+
+    use objc2::{rc::autoreleasepool, AllocAnyThread};
+    use objc2_app_kit::{NSBitmapImageFileType, NSBitmapImageRep, NSWorkspace};
+    use objc2_foundation::{NSDictionary, NSPoint, NSRect, NSSize, NSString};
+
+    use super::{base64, exe_name, plain_name, AppInfo};
+
+    pub fn all() -> Vec<AppInfo> {
+        let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();
+        let dirs = [
+            PathBuf::from("/Applications"),
+            PathBuf::from("/Applications/Utilities"),
+            PathBuf::from("/System/Applications"),
+            PathBuf::from("/System/Applications/Utilities"),
+            home.join("Applications"),
+        ];
+        let mut apps: Vec<AppInfo> = Vec::new();
+        for dir in dirs {
+            let mut bundles = Vec::new();
+            find_apps(&dir, 0, &mut bundles);
+            for bundle in bundles {
+                if let Some(app) = read_app(&bundle) {
+                    if !apps.iter().any(|a| a.exe == app.exe) {
+                        apps.push(app);
+                    }
+                }
+            }
+        }
+        apps.sort_by_key(|a| a.name.to_lowercase());
+        apps
+    }
+
+    /// Browse: an .app, or a program inside one.
+    pub fn info_for(path: &str) -> AppInfo {
+        let bundle = Path::new(path).ancestors().find(|p| p.extension().is_some_and(|e| e == "app"));
+        bundle.and_then(read_app).unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None })
+    }
+
+    /// .app bundles, also one folder down ("/Applications/Adobe Photoshop 2025/…").
+    fn find_apps(dir: &Path, depth: u32, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else { return };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().is_some_and(|e| e == "app") {
+                out.push(path);
+            } else if path.is_dir() && depth < 1 {
+                find_apps(&path, depth + 1, out);
+            }
+        }
+    }
+
+    fn read_app(bundle: &Path) -> Option<AppInfo> {
+        let info = plist::Value::from_file(bundle.join("Contents/Info.plist")).ok()?;
+        let info = info.as_dictionary()?;
+        let field = |key: &str| info.get(key).and_then(|v| v.as_string()).filter(|s| !s.is_empty()).map(str::to_owned);
+        // What's matched: the program file the app runs, like a running app's.
+        let exe = field("CFBundleExecutable")?.to_lowercase();
+        let name = field("CFBundleDisplayName")
+            .or_else(|| field("CFBundleName"))
+            .unwrap_or_else(|| bundle.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default());
+        Some(AppInfo { name, exe, icon: icon(bundle) })
+    }
+
+    /// The app's icon as Finder shows it, as a small PNG data URL.
+    fn icon(bundle: &Path) -> Option<String> {
+        autoreleasepool(|_| {
+            let image = NSWorkspace::sharedWorkspace().iconForFile(&NSString::from_str(&bundle.to_string_lossy()));
+            image.setSize(NSSize::new(48.0, 48.0));
+            // The picture that best fits 48 points (96 pixels on Retina).
+            let mut rect = NSRect::new(NSPoint::new(0.0, 0.0), NSSize::new(96.0, 96.0));
+            let cg = unsafe { image.CGImageForProposedRect_context_hints(&mut rect, None, None) }?;
+            let rep = NSBitmapImageRep::initWithCGImage(NSBitmapImageRep::alloc(), &cg);
+            let png = unsafe { rep.representationUsingType_properties(NSBitmapImageFileType::PNG, &NSDictionary::new()) }?;
+            Some(format!("data:image/png;base64,{}", base64(&png.to_vec())))
+        })
+    }
+}
+
+/// Other systems: blips don't show there, so there's nothing to list.
+#[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
 mod platform {
     use super::{exe_name, plain_name, AppInfo};
 
@@ -724,7 +807,7 @@ mod platform {
 }
 
 /// Bytes as base64, for icons sent to the window as data URLs.
-#[cfg_attr(not(any(windows, target_os = "linux")), allow(dead_code))]
+#[cfg_attr(not(any(windows, target_os = "linux", target_os = "macos")), allow(dead_code))]
 fn base64(bytes: &[u8]) -> String {
     const TABLE: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);

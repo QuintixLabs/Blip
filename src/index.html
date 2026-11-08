@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles/components/sidebar.css" />
     <link rel="stylesheet" href="styles/components/update-bar.css" />
     <link rel="stylesheet" href="styles/components/dialog.css" />
+    <link rel="stylesheet" href="styles/components/reveal.css" />
     <link rel="stylesheet" href="styles/controls/shapes.css" />
     <link rel="stylesheet" href="styles/controls/colors.css" />
     <link rel="stylesheet" href="styles/controls/sliders.css" />
@@ -57,7 +58,7 @@
             <div class="step-icon"><img class="logo" src="assets/logos/logo.svg" alt="" /></div>
             <h1>Welcome to Blip</h1>
             <p class="lead">A soft blip wherever you click, so your clicks are easy to see.</p>
-            <p class="notice" data-unsupported hidden></p>
+            <div class="reveal" data-unsupported><div class="reveal-inner"><div class="notice"></div></div></div>
           </div>
 
           <div class="step" data-step="1" hidden>
@@ -98,7 +99,7 @@
           <h2>Blip</h2>
         </header>
         <p class="page-hint">Click anywhere on your screen to see your blip.</p>
-        <p class="notice" data-unsupported hidden></p>
+        <div class="reveal" data-unsupported><div class="reveal-inner"><div class="notice"></div></div></div>
 
         <h3 class="section">Look</h3>
         <div class="group">
@@ -192,7 +193,7 @@
             <div>
               <div class="row-title">Taskbar</div>
               <div class="row-hint">Taskbar and Start menu</div>
-              <div class="row-warning" data-taskbar-warning hidden><i class="icon icon-alert"></i>Blips show behind the taskbar on Windows.</div>
+              <div class="reveal" data-taskbar-warning><div class="reveal-inner"><div class="row-warning"><i class="icon icon-alert"></i>Blips show behind the taskbar on Windows.</div></div></div>
             </div>
             <button class="toggle" role="switch" data-field="skipTaskbar" data-invert></button>
           </div>

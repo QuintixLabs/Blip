@@ -27,10 +27,6 @@
   line-height: 1.45;
 }
 
-.notice[hidden] {
-  display: none;
-}
-
 /* With the Allow button: the text, then the button on the right. */
 .notice-action {
   display: flex;
@@ -46,8 +42,35 @@
 
 .notice-error {
   flex-basis: 100%;
+}
+
+.notice-error .notice-error-text {
   color: var(--danger);
   font-size: 12px;
+}
+
+/* Allow and Waiting… share one spot, so the button is always as wide as the
+   longer of the two and nothing next to it moves when it changes. */
+.allow-button {
+  display: inline-grid;
+  place-items: center;
+}
+
+.allow-button > span {
+  grid-area: 1 / 1;
+}
+
+.allow-button > .when-waiting,
+.allow-button.is-waiting > .when-ready {
+  visibility: hidden;
+}
+
+.allow-button.is-waiting > .when-waiting {
+  visibility: visible;
+}
+
+.allow-button:disabled {
+  cursor: default;
 }
 
 /* ------------------------------------------------------------
@@ -99,10 +122,6 @@
   color: var(--warning);
   font-size: 12px;
   line-height: 1.4;
-}
-
-.row-warning[hidden] {
-  display: none;
 }
 
 /* The switch stays level with the title and hint, whether the warning shows or not. */

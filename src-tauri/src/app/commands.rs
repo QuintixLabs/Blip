@@ -103,6 +103,9 @@ pub async fn blip_info() -> blip::Info {
     tauri::async_runtime::spawn_blocking(blip::info).await.unwrap_or(blip::Info {
         reason: None,
         needs_access: false,
+        access_text: "",
+        access_button: "",
+        access_waits: false,
         features: blip::Features { text: true, links: true, taskbar: true, games: true, apps: true },
     })
 }

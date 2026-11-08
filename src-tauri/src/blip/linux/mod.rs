@@ -93,6 +93,14 @@ pub fn needs_access() -> bool {
     matches!(session(), Session::Kde | Session::Hyprland) && access::needed()
 }
 
+pub fn access_prompt() -> super::AccessPrompt {
+    super::AccessPrompt {
+        text: "Blip needs your OK to see mouse clicks on this system. Your password is asked once.",
+        button: "Allow",
+        waits: false,
+    }
+}
+
 pub fn allow_access() -> Result<(), String> {
     access::allow()
 }

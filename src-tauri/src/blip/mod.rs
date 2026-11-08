@@ -9,7 +9,8 @@
 //   draw.rs      draws one frame of a blip (the same on every system)
 //   windows.rs   Windows: watching clicks, the rules, putting blips on screen
 //   linux/       Linux: X11, and Wayland on KDE Plasma and Hyprland
-//   other.rs     systems Blip can't draw on yet (macOS for now)
+//   macos.rs     macOS: watching clicks, the rules, putting blips on screen
+//   other.rs     systems Blip can't draw on
 
 mod draw;
 mod style;
@@ -24,9 +25,14 @@ mod linux;
 #[cfg(target_os = "linux")]
 use linux as platform;
 
-#[cfg(not(any(windows, target_os = "linux")))]
+#[cfg(target_os = "macos")]
+mod macos;
+#[cfg(target_os = "macos")]
+use macos as platform;
+
+#[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
 mod other;
-#[cfg(not(any(windows, target_os = "linux")))]
+#[cfg(not(any(windows, target_os = "linux", target_os = "macos")))]
 use other as platform;
 
 use std::sync::{
@@ -55,14 +61,32 @@ pub struct Features {
 pub struct Info {
     /// Why blips can't show on this system, if they can't.
     pub reason: Option<String>,
-    /// Blips work here once Blip may read the mouse (Linux on Wayland); the
-    /// window shows an Allow button.
+    /// Blips work here once Blip may see clicks (Linux on Wayland, macOS); the
+    /// window then shows ccess_text and a button labelled ccess_button.
     pub needs_access: bool,
+    pub access_text: &'static str,
+    pub access_button: &'static str,
+    /// The OK is given in another app (macOS System Settings), so the window
+    /// keeps checking after the button.
+    pub access_waits: bool,
     pub features: Features,
 }
 
-/// When a click shouldn't get a blip.
+/// How a system asks for the OK to see clicks.
+pub struct AccessPrompt {
+    pub text: &'static str,
+    pub button: &'static str,
+    pub waits: bool,
+}
+
+impl AccessPrompt {
+    #[allow(dead_code)] // for systems that never need it
+    pub const NONE: Self = Self { text: "", button: "", waits: false };
+}
+
+/// When a click shouldn't get a blip. Not every system can check every rule.
 #[derive(Clone, Copy)]
+#[allow(dead_code)]
 pub struct Rules {
     /// The text cursor (I-beam) is showing: typing, selecting text.
     pub text_cursor: bool,
@@ -140,10 +164,19 @@ pub fn apply(settings: &Settings) {
 
 /// For the window: whether blips work here, and which rules can be checked.
 pub fn info() -> Info {
-    Info { reason: platform::unsupported_reason(), needs_access: platform::needs_access(), features: platform::features() }
+    let prompt = platform::access_prompt();
+    Info {
+        reason: platform::unsupported_reason(),
+        needs_access: platform::needs_access(),
+        access_text: prompt.text,
+        access_button: prompt.button,
+        access_waits: prompt.waits,
+        features: platform::features(),
+    }
 }
 
-/// The Allow button: lets Blip read the mouse (Linux on Wayland).
+/// The Allow button: lets Blip see clicks (Linux on Wayland), or opens the
+/// place to switch that on (macOS).
 pub fn allow_access() -> Result<(), String> {
     platform::allow_access()
 }
