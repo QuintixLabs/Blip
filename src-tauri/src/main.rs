@@ -63,17 +63,24 @@ fn main() {
         .build(tauri::generate_context!())
         .expect("failed to start Blip");
 
-    app.run(|app, event| {
-        if let RunEvent::ExitRequested { code, api, .. } = event {
-            // Last window closed: Blip keeps running in the tray, that's its job,
-            // unless Close to tray is off (closing from the tray icon still keeps it).
-            // Exit from the tray menu (code is set) quits.
+    app.run(|app, event| match event {
+        // Last window closed: Blip keeps running in the tray, that's its job,
+        // unless Close to tray is off (closing from the tray icon still keeps it).
+        // Exit from the tray menu (code is set) quits.
+        RunEvent::ExitRequested { code, api, .. } => {
             if code.is_none() && main_window::stays_in_tray(app) {
                 api.prevent_exit();
             } else {
                 updates::install_on_exit(app);
             }
         }
+        // macOS: opening Blip while it runs (Finder, Spotlight, Launchpad) doesn't
+        // start a second copy; macOS asks the running one to reopen instead. Treat it
+        // like opening it again anywhere else, so it can always be reached, even
+        // with the tray icon hidden.
+        #[cfg(target_os = "macos")]
+        RunEvent::Reopen { .. } => main_window::open_async(app),
+        _ => {}
     });
 }
 
