@@ -90,6 +90,9 @@ function leave(chip) {
     const others = [...chips.children].filter((c) => c !== chip);
     const before = new Map(others.map((c) => [c, c.getBoundingClientRect()]));
     const height = chips.offsetHeight;
+    // Hold the area at its height while the chip goes. Letting the page get
+    // shorter here, even for a moment, makes it jump when you're at the bottom.
+    chips.style.height = `${height}px`;
     chip.remove();
     for (const c of others) {
       const was = before.get(c);
@@ -100,18 +103,61 @@ function leave(chip) {
         c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 180, easing: EASE });
       }
     }
+    const newHeight = naturalHeight();
+    if (newHeight >= height) {
+      chips.style.height = '';
+      return;
+    }
+    keepPageLength(height - newHeight);
     // First the chips glide while the area keeps its size, then the area eases to
     // its new height: done together, it would cut off a chip that's still moving.
-    const newHeight = chips.offsetHeight;
-    if (newHeight !== height && newHeight > 0) {
-      chips.animate([{ height: `${height}px` }, { height: `${newHeight}px` }], { duration: 220, delay: 180, easing: EASE, fill: 'backwards' });
-    }
+    chips.animate([{ height: `${height}px` }, { height: `${newHeight}px` }], { duration: 220, delay: 180, easing: EASE, fill: 'backwards' }).finished.then(
+      () => (chips.style.height = ''),
+      () => (chips.style.height = ''),
+    );
   };
   chip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-out', fill: 'forwards' }).finished.then(remove, remove);
   // Animations pause while the window is hidden; it still goes.
   setTimeout(remove, 300);
 }
 
+/** The chip area's height for the chips in it now, worked out from where they
+ *  are (asking the browser would shorten the page early). */
+function naturalHeight() {
+  const box = chips.getBoundingClientRect();
+  const bottom = Math.max(box.top, ...[...chips.children].map((c) => c.getBoundingClientRect().bottom));
+  return Math.round(bottom - box.top + parseFloat(getComputedStyle(chips).paddingBottom));
+}
+
+// ------------------------------------------------------------
+// Keeping the page still at the bottom
+// ------------------------------------------------------------
+
+// Scrolled all the way down, a page that gets shorter pulls everything above
+// it down. So while the chip area shrinks, the same room is added under the
+// page, and nothing you can see moves. That room goes once it's out of sight:
+// when you scroll up or open another page.
+
+const main = $('main');
+let extraRoom = 0;
+let basePadding = null;
+
+function keepPageLength(lost) {
+  const atBottom = main.scrollTop + main.clientHeight >= main.scrollHeight - 2;
+  if (!atBottom) return;
+  basePadding ??= parseFloat(getComputedStyle(main).paddingBottom);
+  extraRoom += lost;
+  main.style.paddingBottom = `${basePadding + extraRoom}px`;
+}
+
+main.addEventListener('scroll', () => {
+  if (!extraRoom) return;
+  const outOfSight = main.scrollTop + main.clientHeight < main.scrollHeight - extraRoom - 1;
+  if (outOfSight || $('#blip').hidden) {
+    extraRoom = 0;
+    main.style.paddingBottom = '';
+  }
+});
 function renderChips(state) {
   const apps = state.settings.skipApps;
   const animate = chipsShown;
