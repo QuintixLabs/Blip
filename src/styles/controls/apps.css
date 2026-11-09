@@ -140,9 +140,10 @@ i.app-icon {
   border-radius: 8px;
 }
 
+/* Outfit sits a touch high in its line; the top padding brings it to the middle. */
 .apps-filters button {
   height: 24px;
-  padding: 0 9px;
+  padding: 2px 9px 0;
   border-radius: 6px;
   font-size: 12px;
 }

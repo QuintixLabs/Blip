@@ -100,9 +100,11 @@ function leave(chip) {
         c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 180, easing: EASE });
       }
     }
+    // First the chips glide while the area keeps its size, then the area eases to
+    // its new height: done together, it would cut off a chip that's still moving.
     const newHeight = chips.offsetHeight;
     if (newHeight !== height && newHeight > 0) {
-      chips.animate([{ height: `${height}px` }, { height: `${newHeight}px` }], { duration: 220, easing: EASE });
+      chips.animate([{ height: `${height}px` }, { height: `${newHeight}px` }], { duration: 220, delay: 180, easing: EASE, fill: 'backwards' });
     }
   };
   chip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-out', fill: 'forwards' }).finished.then(remove, remove);
