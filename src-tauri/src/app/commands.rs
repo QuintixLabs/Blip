@@ -154,6 +154,16 @@ pub async fn open_link(app: AppHandle, name: String) -> Result<(), String> {
     app.opener().open_url(*url, None::<&str>).map_err(|e| e.to_string())
 }
 
+/// The folder button in "Skip these apps": shows that program in the file manager.
+#[tauri::command]
+pub async fn reveal_app(app: AppHandle, path: String) -> Result<(), String> {
+    use tauri_plugin_opener::OpenerExt;
+    if !std::path::Path::new(&path).exists() {
+        return Err("That app isn't there anymore.".into());
+    }
+    app.opener().reveal_item_in_dir(&path).map_err(|e| e.to_string())
+}
+
 /// "Open settings folder": shows blip.json in the file manager.
 #[tauri::command]
 pub async fn open_settings_folder(app: AppHandle) -> Result<(), String> {

@@ -54,6 +54,7 @@ fn main() {
             commands::blip_allow_access,
             commands::list_apps,
             commands::browse_app,
+            commands::reveal_app,
             commands::check_update,
             commands::install_update,
             commands::pending_update,

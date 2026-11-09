@@ -20,14 +20,13 @@
   padding: 0 16px 14px;
 }
 
-.app-chips[hidden] {
-  display: none;
-}
-
 .app-chip {
   display: inline-flex;
+  flex: none;
   align-items: center;
   gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
   height: 28px;
   padding: 0 4px 0 8px;
   border: 1px solid var(--line);
@@ -117,6 +116,36 @@ i.app-icon {
   color: var(--faint);
 }
 
+/* "3 skipped" at the right of the search box: the count, and a switch that
+   shows only those apps. Accent-colored while it's on. */
+.apps-filter {
+  flex: none;
+  height: 24px;
+  margin-right: -6px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--raised);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 150ms, color 150ms;
+}
+
+.apps-filter:hover {
+  background: var(--line-strong);
+  color: var(--text);
+}
+
+.apps-filter.is-on {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+.apps-filter[hidden] {
+  display: none;
+}
+
 .apps-list {
   height: 248px;
   margin: 10px -6px 18px 0;
@@ -143,12 +172,73 @@ i.app-icon {
   height: 44px;
   padding: 0 10px;
   border-radius: 9px;
+  cursor: pointer;
   text-align: left;
   transition: background 120ms;
 }
 
 .app-item:hover {
   background: var(--raised);
+}
+
+/* A hairline apart, so ticked rows next to each other don't merge into one block. */
+.app-item + .app-item {
+  margin-top: 2px;
+}
+
+/* Ticked: a soft accent background, easy to spot while scrolling. */
+.app-item.is-checked {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.app-item.is-checked:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+.app-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* "Open now" and "All apps" above their apps. */
+.apps-group {
+  margin: 0;
+  padding: 12px 10px 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.apps-group:first-child {
+  padding-top: 2px;
+}
+
+/* Show in folder: on the row you're pointing at. */
+.app-folder {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  color: var(--faint);
+  opacity: 0;
+  transition: opacity 120ms, background 120ms, color 120ms;
+}
+
+.app-item:hover .app-folder,
+.app-folder:focus-visible {
+  opacity: 1;
+}
+
+.app-folder:hover {
+  background: var(--line-strong);
+  color: var(--text);
+}
+
+.app-folder .icon {
+  width: 15px;
+  height: 15px;
 }
 
 .app-item .app-icon {

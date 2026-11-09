@@ -211,7 +211,7 @@
             </div>
             <button id="choose-apps" class="btn btn-muted btn-sm">Choose apps</button>
           </div>
-          <div class="app-chips" id="app-chips" data-feature="apps" hidden></div>
+          <div class="reveal app-chips-wrap" id="app-chips-wrap" data-feature="apps"><div class="reveal-inner"><div class="app-chips" id="app-chips"></div></div></div>
         </div>
         <div class="footer">
           <span></span>
@@ -314,7 +314,7 @@
       <form method="dialog">
         <p class="dialog-title">Skip these apps</p>
         <p class="dialog-text">Blips won't show in the apps you tick.</p>
-        <label class="apps-search"><i class="icon icon-search"></i><input type="text" placeholder="Search" spellcheck="false" autocomplete="off" /></label>
+        <div class="apps-search"><i class="icon icon-search"></i><input type="text" placeholder="Search" spellcheck="false" autocomplete="off" aria-label="Search apps" /><button type="button" class="apps-filter" id="apps-filter" hidden></button></div>
         <div class="apps-list" id="apps-list"></div>
         <div class="dialog-actions apps-actions">
           <button type="button" id="apps-browse" class="btn btn-ghost">Not in the list? Browse...</button>

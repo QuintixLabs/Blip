@@ -17,6 +17,10 @@ pub struct AppInfo {
     pub exe: String,
     /// A PNG data URL, when the icon could be read.
     pub icon: Option<String>,
+    /// Where the program is, for "show in folder". Only while Blip runs: it's never saved.
+    pub path: Option<String>,
+    /// Running right now (listed first, under "Open now").
+    pub open: bool,
 }
 
 pub use platform::{all, info_for};
@@ -118,20 +122,22 @@ mod platform {
         found.sort_by_key(|s| (!s.plain, s.name.len()));
         found.extend(steam_games());
         found.extend(epic_games());
-        found.extend(open_windows().into_iter().map(|path| Shortcut {
+        let open = open_windows();
+        let open_exes: Vec<String> = open.iter().map(|p| exe_name(p)).collect();
+        found.extend(open.into_iter().map(|path| Shortcut {
             name: description(&path).map(|d| plain_name(&d)).unwrap_or_else(|| plain_name(&path)),
             exe: exe_name(&path),
-            icon: path,
+            icon: path.clone(),
+            path,
             plain: true,
         }));
 
-        // (name, exe, icon file)
-        let mut entries: Vec<(String, String, String)> = Vec::new();
+        let mut entries: Vec<Shortcut> = Vec::new();
         for s in found {
-            if not_an_app(&s.name, &s.exe) || entries.iter().any(|(_, e, _)| *e == s.exe) {
+            if not_an_app(&s.name, &s.exe) || entries.iter().any(|e| e.exe == s.exe) {
                 continue;
             }
-            entries.push((s.name, s.exe, s.icon));
+            entries.push(s);
         }
 
         // Icons take the longest, so a few are read at once (and kept for next time).
@@ -140,11 +146,12 @@ mod platform {
         std::thread::scope(|scope| {
             let jobs: Vec<_> = entries
                 .chunks(chunk)
-                .map(|part| scope.spawn(move || part.iter().map(|(_, _, path)| icon(path)).collect::<Vec<_>>()))
+                .map(|part| scope.spawn(move || part.iter().map(|s| icon(&s.icon)).collect::<Vec<_>>()))
                 .collect();
             let icons = jobs.into_iter().flat_map(|job| job.join().unwrap_or_default());
-            for ((name, exe, _), icon) in entries.iter().zip(icons) {
-                apps.push(AppInfo { name: name.clone(), exe: exe.clone(), icon });
+            for (s, icon) in entries.iter().zip(icons) {
+                let path = std::path::Path::new(&s.path).is_file().then(|| s.path.clone());
+                apps.push(AppInfo { name: s.name.clone(), exe: s.exe.clone(), icon, path, open: open_exes.contains(&s.exe) });
             }
         });
         apps.sort_by_key(|a| a.name.to_lowercase());
@@ -158,6 +165,8 @@ mod platform {
             name: description(path).map(|d| plain_name(&d)).unwrap_or_else(|| plain_name(path)),
             exe: exe_name(path),
             icon: icon(path),
+            path: Some(path.to_owned()),
+            open: false,
         }
     }
 
@@ -172,6 +181,8 @@ mod platform {
         exe: String,
         /// Where its icon is read from.
         icon: String,
+        /// The program file ("show in folder").
+        path: String,
         /// Starts the program with nothing extra passed along.
         plain: bool,
     }
@@ -229,7 +240,7 @@ mod platform {
                     _ => target.clone(),
                 };
                 let name = path.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default();
-                apps.push(Shortcut { name, exe, icon, plain: args.trim().is_empty() });
+                apps.push(Shortcut { name, exe, icon, path: target, plain: args.trim().is_empty() });
             }
         }
         apps
@@ -274,7 +285,7 @@ mod platform {
             return None;
         }
         let name = path.file_stem()?.to_string_lossy().into_owned();
-        Some(Shortcut { name, exe: exe_name(&icon), icon, plain: true })
+        Some(Shortcut { name, exe: exe_name(&icon), path: icon.clone(), icon, plain: true })
     }
 
     /// `"key"   "value"` in Steam's files.
@@ -318,7 +329,7 @@ mod platform {
                 }
                 if let Some(exe) = main_program(&apps.join("common").join(dir)) {
                     let exe = exe.to_string_lossy().into_owned();
-                    games.push(Shortcut { name: name.to_owned(), exe: exe_name(&exe), icon: exe, plain: true });
+                    games.push(Shortcut { name: name.to_owned(), exe: exe_name(&exe), icon: exe.clone(), path: exe, plain: true });
                 }
             }
         }
@@ -392,7 +403,7 @@ mod platform {
             // The launch program may be a small starter; the game itself is the biggest one.
             let exe = main_program(std::path::Path::new(&folder)).unwrap_or(exe);
             let exe = exe.to_string_lossy().into_owned();
-            games.push(Shortcut { name, exe: exe_name(&exe), icon: exe, plain: true });
+            games.push(Shortcut { name, exe: exe_name(&exe), icon: exe.clone(), path: exe, plain: true });
         }
         games
     }
@@ -571,8 +582,24 @@ mod platform {
                 }
             }
         }
+        // Running right now: the program files of every process.
+        let running = running_programs();
+        for app in &mut apps {
+            app.open = running.contains(&app.exe);
+        }
         apps.sort_by_key(|a| a.name.to_lowercase());
         apps
+    }
+
+    /// The file names of all running programs ("firefox", "dolphin").
+    fn running_programs() -> HashSet<String> {
+        let Ok(entries) = std::fs::read_dir("/proc") else { return HashSet::new() };
+        entries
+            .flatten()
+            .filter(|e| e.file_name().to_string_lossy().bytes().all(|b| b.is_ascii_digit()))
+            .filter_map(|e| std::fs::read_link(e.path().join("exe")).ok())
+            .filter_map(|exe| exe.file_name().map(|n| n.to_string_lossy().to_lowercase()))
+            .collect()
     }
 
     /// Browse: a .desktop file, or a program.
@@ -582,7 +609,7 @@ mod platform {
                 return app;
             }
         }
-        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None }
+        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false }
     }
 
     /// Where apps and icons live: yours first, then the system's, Flatpak and Snap.
@@ -647,20 +674,32 @@ mod platform {
         if exec.contains("steam://") {
             return None;
         }
-        let exe = match flatpak {
-            // KDE knows Flatpak apps by their id, which is what's matched.
-            Some(id) => id,
-            None => program(&exec)?,
+        let (exe, path) = match flatpak {
+            // KDE knows Flatpak apps by their id, which is what's matched. Their
+            // program lives inside the Flatpak, so there's no folder to show.
+            Some(id) => (id, None),
+            None => {
+                let first = first_word(&exec)?;
+                (exe_name(&first), find_program(&first))
+            }
         };
-        Some(AppInfo { name, exe, icon: icon.and_then(|i| icon_data(&i)) })
+        Some(AppInfo { name, exe, icon: icon.and_then(|i| icon_data(&i)), path, open: false })
     }
 
-    /// The program an Exec line starts: "env FOO=1 /usr/bin/firefox %u" → "firefox".
-    fn program(exec: &str) -> Option<String> {
+    /// The program an Exec line starts: "env FOO=1 /usr/bin/firefox %u" → "/usr/bin/firefox".
+    fn first_word(exec: &str) -> Option<String> {
         let words: Vec<&str> = exec.split_whitespace().map(|w| w.trim_matches('"')).collect();
         let mut words = words.into_iter().skip_while(|w| *w == "env" || w.contains('=') && !w.starts_with('/'));
-        let first = words.next()?;
-        Some(exe_name(first))
+        words.next().map(str::to_owned)
+    }
+
+    /// Where a program is: as written if it's a full path, otherwise looked up in PATH.
+    fn find_program(program: &str) -> Option<String> {
+        if program.starts_with('/') {
+            return Path::new(program).is_file().then(|| program.to_owned());
+        }
+        let path = std::env::var_os("PATH")?;
+        std::env::split_paths(&path).map(|dir| dir.join(program)).find(|p| p.is_file()).map(|p| p.to_string_lossy().into_owned())
     }
 
     // ------------------------------------------------------------
@@ -742,14 +781,38 @@ mod platform {
                 }
             }
         }
+        // Running right now: the program files of every process.
+        let running = running_programs();
+        for app in &mut apps {
+            app.open = running.contains(&app.exe);
+        }
         apps.sort_by_key(|a| a.name.to_lowercase());
         apps
+    }
+
+    /// The file names of all running programs, lowercase ("safari").
+    fn running_programs() -> std::collections::HashSet<String> {
+        let mut pids = vec![0i32; 4096];
+        let size = (pids.len() * std::mem::size_of::<i32>()) as i32;
+        let count = unsafe { libc::proc_listallpids(pids.as_mut_ptr() as *mut std::ffi::c_void, size) };
+        let mut names = std::collections::HashSet::new();
+        for &pid in pids.iter().take(count.max(0) as usize) {
+            let mut buf = vec![0u8; 4096];
+            let len = unsafe { libc::proc_pidpath(pid, buf.as_mut_ptr() as *mut std::ffi::c_void, buf.len() as u32) };
+            if len > 0 {
+                let path = String::from_utf8_lossy(&buf[..len as usize]).into_owned();
+                if let Some(name) = path.rsplit('/').next() {
+                    names.insert(name.to_lowercase());
+                }
+            }
+        }
+        names
     }
 
     /// Browse: an .app, or a program inside one.
     pub fn info_for(path: &str) -> AppInfo {
         let bundle = Path::new(path).ancestors().find(|p| p.extension().is_some_and(|e| e == "app"));
-        bundle.and_then(read_app).unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None })
+        bundle.and_then(read_app).unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false })
     }
 
     /// .app bundles, also one folder down ("/Applications/Adobe Photoshop 2025/…").
@@ -774,7 +837,7 @@ mod platform {
         let name = field("CFBundleDisplayName")
             .or_else(|| field("CFBundleName"))
             .unwrap_or_else(|| bundle.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default());
-        Some(AppInfo { name, exe, icon: icon(bundle) })
+        Some(AppInfo { name, exe, icon: icon(bundle), path: Some(bundle.to_string_lossy().into_owned()), open: false })
     }
 
     /// The app's icon as Finder shows it, as a small PNG data URL.
@@ -802,7 +865,7 @@ mod platform {
     }
 
     pub fn info_for(path: &str) -> AppInfo {
-        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None }
+        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false }
     }
 }
 
