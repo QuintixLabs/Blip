@@ -24,7 +24,7 @@ const paths = new Map();
 let shown = [];
 /** The apps found, once looked up (the lookup starts when the window opens). */
 let found = null;
-/** File names of the apps Blip found itself; the rest were added with Browse. */
+/** File names of the apps Blip found itself; the rest were picked with Browse. */
 let foundExes = new Set();
 
 function findApps() {
@@ -42,8 +42,8 @@ const skipped = () => app.state.settings.skipApps;
 /** The ticks while the dialog is open. Saved only with Done; Cancel or Esc drops them. */
 let draft = [];
 const isTicked = (exe) => draft.some((a) => a.exe === exe);
-const isAdded = (exe) => !foundExes.has(exe);
-/** Which apps the list shows: "all", "skipped" (ticked) or "added" (with Browse). */
+const isBrowsed = (exe) => !foundExes.has(exe);
+/** Which apps the list shows: "all", "skipped" (ticked) or "browsed" (picked with Browse). */
 let view = 'all';
 
 const escape = (text) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -77,15 +77,37 @@ function makeChip(a) {
   return chip;
 }
 
-/** A quick fade, then gone; the others move into place. */
+const EASE = 'cubic-bezier(0.4, 0, 0.2, 1)';
+
+/** A quick fade, then gone. The chips after it glide into its place, and when a
+ *  whole row empties, the chip area eases to its new height instead of jumping. */
 function leave(chip) {
   chip.dataset.leaving = '1';
-  chip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-out', fill: 'forwards' }).finished.then(
-    () => chip.remove(),
-    () => chip.remove(),
-  );
+  let done = false;
+  const remove = () => {
+    if (done) return;
+    done = true;
+    const others = [...chips.children].filter((c) => c !== chip);
+    const before = new Map(others.map((c) => [c, c.getBoundingClientRect()]));
+    const height = chips.offsetHeight;
+    chip.remove();
+    for (const c of others) {
+      const was = before.get(c);
+      const now = c.getBoundingClientRect();
+      const dx = was.left - now.left;
+      const dy = was.top - now.top;
+      if (dx || dy) {
+        c.animate([{ transform: `translate(${dx}px, ${dy}px)` }, { transform: 'none' }], { duration: 180, easing: EASE });
+      }
+    }
+    const newHeight = chips.offsetHeight;
+    if (newHeight !== height && newHeight > 0) {
+      chips.animate([{ height: `${height}px` }, { height: `${newHeight}px` }], { duration: 220, easing: EASE });
+    }
+  };
+  chip.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 150, easing: 'ease-out', fill: 'forwards' }).finished.then(remove, remove);
   // Animations pause while the window is hidden; it still goes.
-  setTimeout(() => chip.remove(), 300);
+  setTimeout(remove, 300);
 }
 
 function renderChips(state) {
@@ -137,12 +159,12 @@ function row(a) {
 const EMPTY = {
   all: 'No apps found. Use Browse to pick one.',
   skipped: 'No apps skipped yet.',
-  added: 'No apps added with Browse.',
+  browsed: 'No apps picked with Browse yet.',
 };
 
 function renderList() {
   const query = search.value.trim().toLowerCase();
-  const inView = shown.filter((a) => (view === 'skipped' ? isTicked(a.exe) : view === 'added' ? isAdded(a.exe) : true));
+  const inView = shown.filter((a) => (view === 'skipped' ? isTicked(a.exe) : view === 'browsed' ? isBrowsed(a.exe) : true));
   const matches = inView.filter((a) => !query || a.name.toLowerCase().includes(query) || a.exe.includes(query));
   if (matches.length === 0) {
     list.innerHTML = `<p class="apps-empty">${inView.length ? 'No apps match your search.' : EMPTY[view]}</p>`;
@@ -151,16 +173,16 @@ function renderList() {
   list.innerHTML = matches.map(row).join('');
 }
 
-/** The filter row: which one is on, how many are skipped, and Added only when there are some. */
+/** The filter row: which one is on, how many are skipped, and Browsed only when there are some. */
 function updateFilters() {
-  const added = shown.some((a) => isAdded(a.exe));
-  if (view === 'added' && !added) view = 'all';
+  const browsed = shown.some((a) => isBrowsed(a.exe));
+  if (view === 'browsed' && !browsed) view = 'all';
   for (const button of $$('#apps-filters [data-filter]')) {
     button.classList.toggle('is-active', button.dataset.filter === view);
     button.setAttribute('aria-pressed', String(button.dataset.filter === view));
   }
-  filters.querySelector('[data-filter="added"]').hidden = !added;
-  filters.querySelector('.apps-count').textContent = draft.length ? ` ${draft.length}` : '';
+  filters.querySelector('[data-filter="browsed"]').hidden = !browsed;
+  filters.querySelector('.apps-count').textContent = draft.length ? String(draft.length) : '';
 }
 
 filters.addEventListener('click', (e) => {

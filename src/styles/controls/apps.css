@@ -36,6 +36,11 @@
   font-weight: 500;
 }
 
+/* Outfit sits a touch high next to the icon; nudge it onto the icon's middle. */
+.app-chip-name {
+  transform: translateY(1px);
+}
+
 /* The name opens the app's folder, when Blip knows where it is. */
 .app-chip.has-folder .app-chip-name {
   cursor: pointer;
@@ -87,7 +92,7 @@ i.app-icon {
    ------------------------------------------------------------ */
 
 .apps-dialog .dialog-text {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .apps-search {
@@ -126,11 +131,20 @@ i.app-icon {
   color: var(--faint);
 }
 
-/* All, Skipped and Added under the search: which apps the list shows. */
+/* All, Skipped and Browsed above the search: which apps the list shows. A small,
+   narrow version of the segmented control. */
 .apps-filters {
   display: flex;
   width: fit-content;
-  margin-top: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+.apps-filters button {
+  height: 24px;
+  padding: 0 9px;
+  border-radius: 6px;
+  font-size: 12px;
 }
 
 .apps-filters button[hidden] {
@@ -138,6 +152,7 @@ i.app-icon {
 }
 
 .apps-count {
+  margin-left: 5px;
   color: var(--accent);
   font-weight: 600;
 }

@@ -314,12 +314,12 @@
       <form method="dialog">
         <p class="dialog-title">Skip these apps</p>
         <p class="dialog-text">Blips won't show in the apps you tick.</p>
-        <div class="apps-search"><i class="icon icon-search"></i><input type="text" placeholder="Search" spellcheck="false" autocomplete="off" aria-label="Search apps" /></div>
         <div class="segmented apps-filters" id="apps-filters" role="group" aria-label="Show">
           <button type="button" class="is-active" data-filter="all">All</button>
           <button type="button" data-filter="skipped">Skipped<span class="apps-count"></span></button>
-          <button type="button" data-filter="added" hidden>Added</button>
+          <button type="button" data-filter="browsed" hidden>Browsed</button>
         </div>
+        <div class="apps-search"><i class="icon icon-search"></i><input type="text" placeholder="Search" spellcheck="false" autocomplete="off" aria-label="Search apps" /></div>
         <div class="apps-list" id="apps-list"></div>
         <div class="dialog-actions apps-actions">
           <button type="button" id="apps-browse" class="btn btn-ghost">Not in the list? Browse...</button>
