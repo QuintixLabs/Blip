@@ -19,8 +19,6 @@ pub struct AppInfo {
     pub icon: Option<String>,
     /// Where the program is, for "show in folder". Only while Blip runs: it's never saved.
     pub path: Option<String>,
-    /// Running right now (listed first, under "Open now").
-    pub open: bool,
 }
 
 pub use platform::{all, info_for};
@@ -122,9 +120,7 @@ mod platform {
         found.sort_by_key(|s| (!s.plain, s.name.len()));
         found.extend(steam_games());
         found.extend(epic_games());
-        let open = open_windows();
-        let open_exes: Vec<String> = open.iter().map(|p| exe_name(p)).collect();
-        found.extend(open.into_iter().map(|path| Shortcut {
+        found.extend(open_windows().into_iter().map(|path| Shortcut {
             name: description(&path).map(|d| plain_name(&d)).unwrap_or_else(|| plain_name(&path)),
             exe: exe_name(&path),
             icon: path.clone(),
@@ -151,7 +147,7 @@ mod platform {
             let icons = jobs.into_iter().flat_map(|job| job.join().unwrap_or_default());
             for (s, icon) in entries.iter().zip(icons) {
                 let path = std::path::Path::new(&s.path).is_file().then(|| s.path.clone());
-                apps.push(AppInfo { name: s.name.clone(), exe: s.exe.clone(), icon, path, open: open_exes.contains(&s.exe) });
+                apps.push(AppInfo { name: s.name.clone(), exe: s.exe.clone(), icon, path });
             }
         });
         apps.sort_by_key(|a| a.name.to_lowercase());
@@ -166,7 +162,6 @@ mod platform {
             exe: exe_name(path),
             icon: icon(path),
             path: Some(path.to_owned()),
-            open: false,
         }
     }
 
@@ -582,24 +577,8 @@ mod platform {
                 }
             }
         }
-        // Running right now: the program files of every process.
-        let running = running_programs();
-        for app in &mut apps {
-            app.open = running.contains(&app.exe);
-        }
         apps.sort_by_key(|a| a.name.to_lowercase());
         apps
-    }
-
-    /// The file names of all running programs ("firefox", "dolphin").
-    fn running_programs() -> HashSet<String> {
-        let Ok(entries) = std::fs::read_dir("/proc") else { return HashSet::new() };
-        entries
-            .flatten()
-            .filter(|e| e.file_name().to_string_lossy().bytes().all(|b| b.is_ascii_digit()))
-            .filter_map(|e| std::fs::read_link(e.path().join("exe")).ok())
-            .filter_map(|exe| exe.file_name().map(|n| n.to_string_lossy().to_lowercase()))
-            .collect()
     }
 
     /// Browse: a .desktop file, or a program.
@@ -609,7 +588,7 @@ mod platform {
                 return app;
             }
         }
-        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false }
+        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()) }
     }
 
     /// Where apps and icons live: yours first, then the system's, Flatpak and Snap.
@@ -683,7 +662,7 @@ mod platform {
                 (exe_name(&first), find_program(&first))
             }
         };
-        Some(AppInfo { name, exe, icon: icon.and_then(|i| icon_data(&i)), path, open: false })
+        Some(AppInfo { name, exe, icon: icon.and_then(|i| icon_data(&i)), path })
     }
 
     /// The program an Exec line starts: "env FOO=1 /usr/bin/firefox %u" → "/usr/bin/firefox".
@@ -781,38 +760,14 @@ mod platform {
                 }
             }
         }
-        // Running right now: the program files of every process.
-        let running = running_programs();
-        for app in &mut apps {
-            app.open = running.contains(&app.exe);
-        }
         apps.sort_by_key(|a| a.name.to_lowercase());
         apps
-    }
-
-    /// The file names of all running programs, lowercase ("safari").
-    fn running_programs() -> std::collections::HashSet<String> {
-        let mut pids = vec![0i32; 4096];
-        let size = (pids.len() * std::mem::size_of::<i32>()) as i32;
-        let count = unsafe { libc::proc_listallpids(pids.as_mut_ptr() as *mut std::ffi::c_void, size) };
-        let mut names = std::collections::HashSet::new();
-        for &pid in pids.iter().take(count.max(0) as usize) {
-            let mut buf = vec![0u8; 4096];
-            let len = unsafe { libc::proc_pidpath(pid, buf.as_mut_ptr() as *mut std::ffi::c_void, buf.len() as u32) };
-            if len > 0 {
-                let path = String::from_utf8_lossy(&buf[..len as usize]).into_owned();
-                if let Some(name) = path.rsplit('/').next() {
-                    names.insert(name.to_lowercase());
-                }
-            }
-        }
-        names
     }
 
     /// Browse: an .app, or a program inside one.
     pub fn info_for(path: &str) -> AppInfo {
         let bundle = Path::new(path).ancestors().find(|p| p.extension().is_some_and(|e| e == "app"));
-        bundle.and_then(read_app).unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false })
+        bundle.and_then(read_app).unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()) })
     }
 
     /// .app bundles, also one folder down ("/Applications/Adobe Photoshop 2025/…").
@@ -837,7 +792,7 @@ mod platform {
         let name = field("CFBundleDisplayName")
             .or_else(|| field("CFBundleName"))
             .unwrap_or_else(|| bundle.file_stem().map(|s| s.to_string_lossy().into_owned()).unwrap_or_default());
-        Some(AppInfo { name, exe, icon: icon(bundle), path: Some(bundle.to_string_lossy().into_owned()), open: false })
+        Some(AppInfo { name, exe, icon: icon(bundle), path: Some(bundle.to_string_lossy().into_owned()) })
     }
 
     /// The app's icon as Finder shows it, as a small PNG data URL.
@@ -865,7 +820,7 @@ mod platform {
     }
 
     pub fn info_for(path: &str) -> AppInfo {
-        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()), open: false }
+        AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()) }
     }
 }
 
