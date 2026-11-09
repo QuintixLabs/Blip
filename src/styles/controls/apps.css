@@ -16,6 +16,9 @@
 .app-chips {
   display: flex;
   flex-wrap: wrap;
+  /* Rows stay at the top while the area eases to a new height, instead of
+     spreading out into the extra room and drifting back. */
+  align-content: flex-start;
   gap: 6px;
   padding: 0 16px 14px;
 }
