@@ -14,10 +14,13 @@
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
-    AppHandle, Emitter,
+    AppHandle, Emitter, Manager,
 };
 
-use crate::ui::{logo, main_window};
+use crate::{
+    app::settings::Store,
+    ui::{logo, main_window},
+};
 
 const ID: &str = "blip";
 
@@ -36,7 +39,8 @@ pub fn create(app: &AppHandle) -> tauri::Result<()> {
     if let Some(icon) = logo::tray_icon().or_else(|| app.default_window_icon().cloned()) {
         tray = tray.icon(icon);
     }
-    tray.build(app)?;
+    let tray = tray.build(app)?;
+    let _ = tray.set_visible(shown(app));
     watch_theme(app);
     Ok(())
 }
@@ -61,8 +65,19 @@ fn watch_theme(app: &AppHandle) {
     });
 }
 
-/// The menu never changes, but settings saves still call this (see Store::update).
-pub fn refresh(_app: &AppHandle) {}
+/// Called after every settings save (see Store::update). The menu never changes;
+/// only whether the icon shows.
+pub fn refresh(app: &AppHandle) {
+    if let Some(tray) = app.tray_by_id(ID) {
+        let _ = tray.set_visible(shown(app));
+    }
+}
+
+/// "Tray icon" in Settings. Hidden, Blip is opened by starting it again
+/// (it's already running, so that just opens the window).
+fn shown(app: &AppHandle) -> bool {
+    app.state::<Store>().get().settings.show_in_tray
+}
 
 /// Hover text while something is happening ("Updating to 2.0.1…"); None goes back to normal.
 pub fn set_status(app: &AppHandle, status: Option<&str>) {

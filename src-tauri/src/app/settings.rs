@@ -65,6 +65,8 @@ pub struct Settings {
     pub start_with_computer: bool,
     /// Off: closing the window quits Blip (and its blips).
     pub close_to_tray: bool,
+    /// The tray icon. Hidden, Blip is opened by starting it again.
+    pub show_in_tray: bool,
     pub auto_update: bool,
     /// Show the welcome screen on the next start (true until it's been gone through).
     pub show_welcome: bool,
@@ -94,6 +96,7 @@ impl Default for Settings {
             notifications: true,
             start_with_computer: true,
             close_to_tray: true,
+            show_in_tray: true,
             auto_update: true,
             show_welcome: true,
         }

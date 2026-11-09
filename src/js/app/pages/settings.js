@@ -37,6 +37,11 @@ function renderChoices(state) {
 
 onRender(renderChoices);
 
+// macOS keeps tray icons in the menu bar.
+if (navigator.userAgent.includes('Mac')) {
+  for (const el of $$('[data-tray-hint]')) el.textContent = 'Show Blip in the menu bar';
+}
+
 for (const el of $$('.segmented[data-field]')) {
   el.addEventListener('click', (e) => {
     const button = e.target.closest('[data-value]');
