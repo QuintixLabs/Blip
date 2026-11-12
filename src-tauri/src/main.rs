@@ -39,8 +39,7 @@ fn main() {
             notifications::register(handle);
             tray::create(handle)?;
             blip::start(&settings);
-            // Keep the system's "start with computer" in step with the setting
-            // (it may have been carried over from the old Blip).
+            // Keep the system's "start with computer" in step with the setting.
             let _ = startup::set(handle, settings.start_with_computer);
             open_on_start(handle);
             Ok(())

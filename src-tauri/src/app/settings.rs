@@ -172,8 +172,7 @@ impl Store {
         let path = settings_dir(app).join(FILE);
         let mut data = match fs::read_to_string(&path) {
             Ok(json) => serde_json::from_str::<Data>(&json).unwrap_or_default(),
-            // First start: bring over the settings of the old AutoHotkey Blip.
-            Err(_) => Data { settings: from_old_blip().unwrap_or_default(), ..Data::default() },
+            Err(_) => Data::default(),
         };
         data.settings = data.settings.sanitized();
         Self { path, data: Mutex::new(data) }
@@ -206,52 +205,4 @@ impl Store {
 
 pub fn now_ms() -> u64 {
     SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_millis() as u64).unwrap_or_default()
-}
-
-// ------------------------------------------------------------
-// The old AutoHotkey Blip
-// ------------------------------------------------------------
-
-/// Blip 1.x (AutoHotkey) kept its settings in %LOCALAPPDATA%\Blip\settings.ini.
-fn from_old_blip() -> Option<Settings> {
-    let dir = std::env::var_os("LOCALAPPDATA")?;
-    let ini = fs::read_to_string(PathBuf::from(dir).join("Blip").join("settings.ini")).ok()?;
-    let value = |key: &str| {
-        ini.lines()
-            .filter_map(|line| line.split_once('='))
-            .find(|(k, _)| k.trim().eq_ignore_ascii_case(key))
-            .map(|(_, v)| v.trim().to_owned())
-    };
-    let number = |key: &str| value(key).and_then(|v| v.parse::<f64>().ok());
-    let flag = |key: &str| value(key).map(|v| v == "1");
-
-    let mut s = Settings::default();
-    if let Some(v) = value("ShadowShape") {
-        s.shape = v.to_lowercase();
-    }
-    if let Some(v) = value("ShadowColor") {
-        s.color = format!("#{}", v.trim_start_matches('#'));
-    }
-    if let Some(v) = number("InitialSize") {
-        s.start_size = v as u32;
-    }
-    if let Some(v) = number("MaxSize") {
-        s.end_size = v as u32;
-    }
-    // Opacity was 0–255, speed was "growth per tick" (1–20ish), fade start 0–1.
-    if let Some(v) = number("MaxOpacity") {
-        s.opacity = (v / 255.0 * 100.0).round() as u32;
-    }
-    if let Some(v) = number("ExpandSpeed") {
-        s.speed = v.round() as u32;
-    }
-    if let Some(v) = number("FadeStartPercent") {
-        s.fade_start = (v * 100.0).round() as u32;
-    }
-    s.skip_text_cursor = flag("BlockIBeam").unwrap_or(s.skip_text_cursor);
-    s.skip_link_cursor = flag("BlockHand").unwrap_or(s.skip_link_cursor);
-    s.skip_taskbar = flag("BlockTaskbar").unwrap_or(s.skip_taskbar);
-    s.skip_games = flag("BlockGames").unwrap_or(s.skip_games);
-    s.start_with_computer = flag("RunOnStartup").unwrap_or(s.start_with_computer);
-    Some(s.sanitized())
 }
