@@ -1,0 +1,195 @@
+/* ============================================================
+   controls/apps/picker.css
+   The "Skip these apps" dialog.
+   ============================================================ */
+
+.apps-dialog .dialog-text {
+  margin-bottom: 14px;
+}
+
+.apps-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--faint);
+}
+
+.apps-search:focus-within {
+  border-color: var(--line-strong);
+}
+
+.apps-search .icon {
+  width: 15px;
+  height: 15px;
+}
+
+.apps-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.apps-search input::placeholder {
+  color: var(--faint);
+}
+
+/* A small version of the segmented control. */
+.apps-filters {
+  display: flex;
+  width: fit-content;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+
+/* Outfit sits a touch high in its line; the top padding brings it to the middle. */
+.apps-filters button {
+  height: 24px;
+  padding: 2px 9px 0;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.apps-filters button[hidden] {
+  display: none;
+}
+
+.apps-count {
+  margin-left: 5px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.apps-dialog .dialog-text.is-problem {
+  color: var(--warning);
+}
+
+.apps-count:empty {
+  display: none;
+}
+
+.apps-list {
+  height: 230px;
+  margin: 10px -6px 18px 0;
+  padding-right: 6px;
+  overflow-y: auto;
+}
+
+/* The same scrollbar as the pages. */
+.apps-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.apps-list::-webkit-scrollbar-thumb {
+  border: 3px solid var(--surface);
+  border-radius: 10px;
+  background: var(--line-strong);
+}
+
+.app-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  height: 44px;
+  padding: 0 10px;
+  border-radius: 9px;
+  cursor: pointer;
+  text-align: left;
+  transition: background 120ms;
+}
+
+.app-item:hover {
+  background: var(--raised);
+}
+
+/* A hairline apart, so ticked rows next to each other don't merge into one block. */
+.app-item + .app-item {
+  margin-top: 2px;
+}
+
+.app-item.is-checked {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+.app-item.is-checked:hover {
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+}
+
+/* Just added with Browse: lights up, then settles to ticked. */
+.app-item.is-added {
+  animation: app-added 1200ms var(--ease);
+}
+
+@keyframes app-added {
+  0%,
+  35% {
+    background: color-mix(in srgb, var(--accent) 30%, transparent);
+  }
+}
+
+.app-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.app-item .app-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.app-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: 14px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-check {
+  width: 16px;
+  height: 16px;
+  color: var(--accent);
+  opacity: 0;
+  transition: opacity 120ms;
+}
+
+.app-item.is-checked .app-check {
+  opacity: 1;
+}
+
+.apps-empty {
+  margin: 0;
+  padding: 24px 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.dialog-actions.apps-actions {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.apps-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+/* Its lighter text sits a touch high next to Done; down 1px to line up. */
+.apps-actions .btn-ghost {
+  height: 38px;
+  margin-left: -10px;
+  padding-top: 2px;
+}

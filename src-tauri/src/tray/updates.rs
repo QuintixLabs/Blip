@@ -49,7 +49,7 @@ fn updater(app: &AppHandle) -> Result<tauri_plugin_updater::Updater, String> {
 }
 
 // ------------------------------------------------------------
-// Manual (Settings → Check for updates)
+// Manual
 // ------------------------------------------------------------
 
 pub async fn check(app: &AppHandle) -> Result<Option<String>, String> {

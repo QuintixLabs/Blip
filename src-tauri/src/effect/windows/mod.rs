@@ -3,12 +3,6 @@
 // Blips on Windows.
 // ============================================================
 
-// Two threads:
-//   clicks  holds the mouse hook (clicks.rs). Windows waits for it on every
-//           mouse event, so it only notes the click and returns straight away.
-//   blips   owns the blip windows and animates them (overlay.rs), one frame
-//           per screen refresh, then sleeps until the next click.
-
 mod clicks;
 mod overlay;
 

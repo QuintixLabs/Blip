@@ -80,15 +80,42 @@ pub async fn list_apps() -> Vec<apps::AppInfo> {
     tauri::async_runtime::spawn_blocking(apps::all).await.unwrap_or_default()
 }
 
+/// An app picked with Browse, and the file that was picked (a .desktop file
+/// can open a program somewhere else). That file is what's saved.
+#[derive(serde::Serialize)]
+pub struct Picked {
+    #[serde(flatten)]
+    app: apps::AppInfo,
+    picked: String,
+}
+
 #[tauri::command]
-pub async fn browse_app(app: AppHandle) -> Option<apps::AppInfo> {
+pub async fn browse_app(app: AppHandle) -> Result<Option<Picked>, String> {
     use tauri_plugin_dialog::DialogExt;
     let mut picker = app.dialog().file().set_title("Choose an app");
     if cfg!(windows) {
         picker = picker.add_filter("Apps", &["exe"]);
+    } else if cfg!(target_os = "macos") {
+        picker = picker.add_filter("Apps", &["app"]);
     }
-    let path = picker.blocking_pick_file()?.into_path().ok()?;
+    let Some(path) = picker.blocking_pick_file().and_then(|p| p.into_path().ok()) else { return Ok(None) };
     let path = path.to_string_lossy().into_owned();
+    tauri::async_runtime::spawn_blocking(move || {
+        if !apps::is_app(&path) {
+            return Err("That isn't an app. Pick a program or its shortcut.".to_owned());
+        }
+        Ok(Some(Picked { app: apps::info_for(&path), picked: path }))
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+/// A browsed app's icon and path again, as long as it's still there.
+#[tauri::command]
+pub async fn app_info(path: String) -> Option<apps::AppInfo> {
+    if !apps::is_app(&path) {
+        return None;
+    }
     tauri::async_runtime::spawn_blocking(move || apps::info_for(&path)).await.ok()
 }
 

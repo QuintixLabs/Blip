@@ -1,0 +1,49 @@
+/* ============================================================
+   controls/look/colors.css
+   The color dots.
+   ============================================================ */
+
+.swatches {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.swatch {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--swatch);
+  /* A thin edge so black shows on dark and white on light. */
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  transition: transform 120ms var(--ease);
+}
+
+.swatch:hover {
+  transform: scale(1.08);
+}
+
+.swatch.is-active {
+  box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
+}
+
+/* "Custom": a rainbow until a custom color is chosen, then that color. */
+.swatch-custom {
+  background: conic-gradient(#ff5c5c, #ffb020, #3dd68c, #4fc4ff, #a78bfa, #f472b6, #ff5c5c);
+  cursor: pointer;
+}
+
+.swatch-custom.is-set {
+  background: var(--swatch);
+}
+
+.swatch-custom input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}

@@ -4,13 +4,6 @@
 // is, checks the rules and shows the blip.
 // ============================================================
 
-// How it's split up:
-//   mice.rs      reading the buttons from the mice and touchpads
-//   access.rs    the permission to read them (the Allow button)
-//   kde.rs       asking KDE where the cursor is
-//   hyprland.rs  asking Hyprland where the cursor is
-//   overlay.rs   drawing the blips
-
 pub(super) mod access;
 mod hyprland;
 mod kde;

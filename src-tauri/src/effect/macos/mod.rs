@@ -3,14 +3,6 @@
 // Blips on macOS.
 // ============================================================
 
-//   clicks  an event tap on its own thread, retried every 2 s until macOS allows it
-//   blips   windows on the main thread (macOS requires it), redrawn by a small ticker
-
-// How it's split up:
-//   ffi.rs      the macOS functions Blip calls, by their C names
-//   clicks.rs   the event tap and the rules (menu bar, Dock, skipped apps)
-//   overlay.rs  the see-through windows
-
 mod clicks;
 mod ffi;
 mod overlay;

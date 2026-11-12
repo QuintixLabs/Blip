@@ -3,11 +3,6 @@
 // Blips on Linux: X11, and Wayland on KDE Plasma and Hyprland.
 // ============================================================
 
-// How it's split up:
-//   x11/       X11: watching clicks, the rules, drawing blips
-//   wayland/   Wayland: reading the mice, asking KDE or Hyprland where the
-//              cursor is, the Allow button, drawing blips on top of everything
-
 mod wayland;
 mod x11;
 

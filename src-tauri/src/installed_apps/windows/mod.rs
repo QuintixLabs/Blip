@@ -95,6 +95,11 @@ pub fn info_for(path: &str) -> AppInfo {
     AppInfo { name: icons::name(path), exe: exe_name(path), icon: icons::icon(path), path: Some(path.to_owned()) }
 }
 
+pub fn is_app(path: &str) -> bool {
+    let path = std::path::Path::new(path);
+    path.is_file() && path.extension().is_some_and(|e| e.eq_ignore_ascii_case("exe"))
+}
+
 fn wide(text: &str) -> Vec<u16> {
     std::ffi::OsStr::new(text).encode_wide().chain(Some(0)).collect()
 }

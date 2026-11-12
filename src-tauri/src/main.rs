@@ -1,7 +1,6 @@
 // ============================================================
 // main.rs
 // Starts Blip: the tray icon, the click watcher and the first window.
-// Blip by Quintix Labs, licensed under the GPL-3.0.
 // ============================================================
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
@@ -53,6 +52,7 @@ fn main() {
             commands::blip_allow_access,
             commands::list_apps,
             commands::browse_app,
+            commands::app_info,
             commands::reveal_app,
             commands::check_update,
             commands::install_update,

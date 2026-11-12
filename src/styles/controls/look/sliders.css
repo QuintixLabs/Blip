@@ -1,0 +1,71 @@
+/* ============================================================
+   controls/look/sliders.css
+   The sliders.
+   ============================================================ */
+
+.slider {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider output {
+  min-width: 48px;
+  color: var(--muted);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.slider input {
+  --fill: 50%;
+  width: 180px;
+  height: 18px;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.slider input::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--accent) var(--fill), var(--line-strong) var(--fill));
+}
+
+.slider input::-webkit-slider-thumb {
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.3);
+  appearance: none;
+  transition: transform 120ms var(--ease);
+}
+
+.slider input:active::-webkit-slider-thumb {
+  transform: scale(1.12);
+}
+
+/* Firefox-based web views (Linux) */
+.slider input::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line-strong);
+}
+
+.slider input::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--accent);
+}
+
+.slider input::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.3);
+}

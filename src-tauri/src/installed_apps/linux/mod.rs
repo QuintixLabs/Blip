@@ -44,6 +44,14 @@ pub fn info_for(path: &str) -> AppInfo {
     AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()) }
 }
 
+/// A .desktop file that opens a program, or a program itself (AppImages too).
+pub fn is_app(path: &str) -> bool {
+    if path.ends_with(".desktop") {
+        return sources::read_entry(Path::new(path)).is_some();
+    }
+    super::is_runnable(Path::new(path), &[b"\x7fELF"])
+}
+
 /// Where apps and icons live: yours first, then the system's, Flatpak and Snap.
 fn data_dirs() -> Vec<PathBuf> {
     let home = std::env::var_os("HOME").map(PathBuf::from).unwrap_or_default();

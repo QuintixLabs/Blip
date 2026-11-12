@@ -1,0 +1,45 @@
+/* ============================================================
+   core/icons.css
+   The icons: <i class="icon icon-folder"></i>, in the text color.
+   ============================================================ */
+
+.icon {
+  display: inline-block;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  background: currentColor;
+  -webkit-mask: var(--icon) center / contain no-repeat;
+  mask: var(--icon) center / contain no-repeat;
+}
+
+/* ------------------------------------------------------------
+   Interface (assets/icons/ui)
+   ------------------------------------------------------------ */
+
+.icon-app { --icon: url("../../assets/icons/ui/app-window.svg"); }
+.icon-alert { --icon: url("../../assets/icons/ui/alert.svg"); }
+.icon-check { --icon: url("../../assets/icons/ui/check.svg"); }
+.icon-click { --icon: url("../../assets/icons/ui/click.svg"); }
+.icon-dark { --icon: url("../../assets/icons/ui/dark.svg"); }
+.icon-folder { --icon: url("../../assets/icons/ui/folder.svg"); }
+.icon-light { --icon: url("../../assets/icons/ui/light.svg"); }
+.icon-mouse-left { --icon: url("../../assets/icons/ui/mouse-left-click.svg"); }
+.icon-mouse-middle { --icon: url("../../assets/icons/ui/mouse-middle-click.svg"); }
+.icon-mouse-right { --icon: url("../../assets/icons/ui/mouse-right-click.svg"); }
+.icon-search { --icon: url("../../assets/icons/ui/search.svg"); }
+.icon-x { --icon: url("../../assets/icons/ui/x.svg"); }
+.icon-monitor { --icon: url("../../assets/icons/ui/monitor.svg"); }
+.icon-panel-close { --icon: url("../../assets/icons/ui/panel-left-close.svg"); }
+.icon-panel-open { --icon: url("../../assets/icons/ui/panel-left-open.svg"); }
+.icon-rotate-ccw { --icon: url("../../assets/icons/ui/rotate-ccw.svg"); }
+.icon-settings { --icon: url("../../assets/icons/ui/settings.svg"); }
+
+/* ------------------------------------------------------------
+   Footer (assets/icons/footer)
+   ------------------------------------------------------------ */
+
+.icon-github { --icon: url("../../assets/icons/footer/github.svg"); }
+.icon-globe { --icon: url("../../assets/icons/footer/globe.svg"); }
+.icon-kofi { --icon: url("../../assets/icons/footer/ko-fi.svg"); }
+.icon-quintix { --icon: url("../../assets/icons/footer/quintix.svg"); }

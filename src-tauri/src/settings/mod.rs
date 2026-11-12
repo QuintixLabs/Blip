@@ -1,7 +1,6 @@
 // ============================================================
 // settings/mod.rs
-// The settings file, blip.json. To see the welcome screen again, exit
-// Blip and set "showWelcome": true.
+// The settings file, blip.json
 // ============================================================
 
 use serde::{Deserialize, Serialize};
@@ -96,6 +95,9 @@ impl Default for Settings {
 pub struct SkipApp {
     pub name: String,
     pub exe: String,
+    /// Only for apps picked with Browse: where to read the icon from next time.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
 }
 
 impl Settings {

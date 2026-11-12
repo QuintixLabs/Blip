@@ -4,10 +4,6 @@
 // see-through windows.
 // ============================================================
 
-// Two threads, each with its own connection to X:
-//   clicks  hears every button press and release, and checks the rules (clicks.rs)
-//   blips   owns the blip windows and redraws them until they're done (overlay.rs)
-
 mod clicks;
 mod overlay;
 

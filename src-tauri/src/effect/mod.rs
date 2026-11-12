@@ -4,10 +4,6 @@
 // unless a rule says not to.
 // ============================================================
 
-// How it's split up:
-//   shape/                  how a blip moves, and drawing it
-//   windows/ linux/ macos/  each system's click watcher, rules and overlay
-
 mod shape;
 
 #[cfg(windows)]

@@ -41,3 +41,13 @@ pub fn info_for(path: &str) -> AppInfo {
         .and_then(sources::read_bundle)
         .unwrap_or_else(|| AppInfo { name: plain_name(path), exe: exe_name(path), icon: None, path: Some(path.to_owned()) })
 }
+
+/// An .app, something inside one, or a program on its own.
+pub fn is_app(path: &str) -> bool {
+    let path = Path::new(path);
+    if path.ancestors().any(|p| p.extension().is_some_and(|e| e == "app") && p.is_dir()) {
+        return true;
+    }
+    const MACH_O: [&[u8]; 5] = [b"\xcf\xfa\xed\xfe", b"\xce\xfa\xed\xfe", b"\xfe\xed\xfa\xcf", b"\xfe\xed\xfa\xce", b"\xca\xfe\xba\xbe"];
+    super::is_runnable(path, &MACH_O)
+}

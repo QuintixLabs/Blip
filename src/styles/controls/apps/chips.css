@@ -1,0 +1,84 @@
+/* ============================================================
+   controls/apps/chips.css
+   The chips under the Apps row, and the app icons.
+   ============================================================ */
+
+/* The chips belong to the Apps row, so no line between them. */
+.apps-row {
+  border-bottom: 0;
+}
+
+.app-chips {
+  display: flex;
+  flex-wrap: wrap;
+  /* Rows stay at the top while the area eases to a new height, instead of
+     spreading out into the extra room and drifting back. */
+  align-content: flex-start;
+  gap: 6px;
+  padding: 0 16px 14px;
+}
+
+.app-chip {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  height: 28px;
+  padding: 0 4px 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--raised);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Outfit sits a touch high next to the icon; nudge it onto the icon's middle. */
+.app-chip-name {
+  transform: translateY(1px);
+}
+
+.app-chip.has-folder .app-chip-name {
+  cursor: pointer;
+  transition: color 120ms;
+}
+
+.app-chip.has-folder .app-chip-name:hover {
+  color: var(--accent);
+}
+
+.app-chip .app-icon {
+  width: 16px;
+  height: 16px;
+}
+
+.app-chip button {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  color: var(--faint);
+  transition: background 120ms, color 120ms;
+}
+
+.app-chip button:hover {
+  background: var(--line-strong);
+  color: var(--text);
+}
+
+.app-chip button .icon {
+  width: 12px;
+  height: 12px;
+}
+
+img.app-icon {
+  display: block;
+  flex: none;
+  object-fit: contain;
+}
+
+i.app-icon {
+  color: var(--muted);
+}
