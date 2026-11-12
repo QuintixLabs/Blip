@@ -61,10 +61,11 @@ wayland-client = "0.31"
 zbus = "5"
 libc = "0.2"
 
-# Blips on macOS: the click watcher (an event tap) and the see-through windows.
+# Blips on macOS: the click watcher and the see-through windows.
 # The same versions Tauri itself uses.
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2 = "0.6"
+block2 = "0.6"
 objc2-foundation = "0.3"
 objc2-app-kit = "0.3"
 objc2-quartz-core = "0.3"

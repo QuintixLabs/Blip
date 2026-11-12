@@ -37,6 +37,7 @@ extern "C" {
     pub(super) fn CGEventGetLocation(event: *mut c_void) -> CGPoint;
     pub(super) fn CGEventGetIntegerValueField(event: *mut c_void, field: u32) -> i64;
     pub(super) fn CGRequestListenEventAccess() -> bool;
+    pub(super) fn CGPreflightListenEventAccess() -> bool;
     pub(super) fn CGMainDisplayID() -> u32;
     pub(super) fn CGDisplayBounds(display: u32) -> CGRect;
     pub(super) fn CGWindowListCopyWindowInfo(option: u32, relative_to: u32) -> *const c_void;

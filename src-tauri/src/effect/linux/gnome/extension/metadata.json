@@ -1,0 +1,8 @@
+{
+  "uuid": "blip@quintixlabs.com",
+  "name": "Blip",
+  "description": "Shows Blip's click effects on GNOME. Installed and used by the Blip app; it does nothing while Blip isn't running.",
+  "shell-version": ["45", "46", "47", "48", "49", "50", "51", "52"],
+  "url": "https://github.com/QuintixLabs/Blip",
+  "version": 1
+}

@@ -1,18 +1,21 @@
 // ============================================================
 // effect/macos/clicks.rs
-// macOS: the event tap that hears every button, and the rules (the
-// menu bar and Dock, skipped apps).
+// macOS: hearing every button, and the rules (the menu bar and Dock,
+// skipped apps).
 // ============================================================
 
 use std::{
     cell::RefCell,
     ffi::{c_void, CStr},
+    ptr::NonNull,
     sync::atomic::Ordering,
     thread,
     time::Duration,
 };
 
+use block2::RcBlock;
 use dispatch2::DispatchQueue;
+use objc2_app_kit::{NSEvent, NSEventMask};
 
 use super::ffi::*;
 use crate::effect::Button;
@@ -34,10 +37,48 @@ thread_local! {
     static TAP: RefCell<*mut c_void> = const { RefCell::new(std::ptr::null_mut()) };
 }
 
+const MASK: u64 = (1 << LEFT_DOWN) | (1 << LEFT_UP) | (1 << RIGHT_DOWN) | (1 << RIGHT_UP) | (1 << OTHER_DOWN) | (1 << OTHER_UP);
+
+/// Already allowed to see input: the event tap, as before. Otherwise a monitor
+/// for the mouse buttons only, which macOS lets any app have without asking
+/// (only watching the keyboard needs permission). The tap is the fallback.
 pub(super) fn watch_clicks() {
-    let mask = [LEFT_DOWN, LEFT_UP, RIGHT_DOWN, RIGHT_UP, OTHER_DOWN, OTHER_UP].iter().fold(0u64, |m, t| m | (1 << t));
+    if !unsafe { CGPreflightListenEventAccess() } {
+        let (tx, rx) = std::sync::mpsc::channel();
+        DispatchQueue::main().exec_async(move || {
+            let _ = tx.send(watch_with_monitor());
+        });
+        if rx.recv().unwrap_or(false) {
+            super::TAP_OK.store(true, Ordering::Relaxed);
+            return;
+        }
+    }
+    watch_with_tap();
+}
+
+/// Runs on the main thread, where macOS calls the monitor too.
+fn watch_with_monitor() -> bool {
+    let handler = RcBlock::new(|event: NonNull<NSEvent>| {
+        let event = unsafe { event.as_ref() };
+        // From the bottom left of the main screen, in points; the tap's are from the top left.
+        let p = event.locationInWindow();
+        let main_height = unsafe { CGDisplayBounds(CGMainDisplayID()) }.size.y;
+        handle(event.r#type().0 as u32, CGPoint { x: p.x, y: main_height - p.y }, event.buttonNumber() as i64);
+    });
+    match NSEvent::addGlobalMonitorForEventsMatchingMask_handler(NSEventMask(MASK), &handler) {
+        Some(monitor) => {
+            // Kept for as long as Blip runs.
+            std::mem::forget(monitor);
+            eprintln!("Blip: watching clicks (no permission needed)");
+            true
+        }
+        None => false,
+    }
+}
+
+fn watch_with_tap() {
     loop {
-        let tap = unsafe { CGEventTapCreate(SESSION_TAP, HEAD_INSERT, LISTEN_ONLY, mask, on_event, std::ptr::null_mut()) };
+        let tap = unsafe { CGEventTapCreate(SESSION_TAP, HEAD_INSERT, LISTEN_ONLY, MASK, on_event, std::ptr::null_mut()) };
         if tap.is_null() {
             // Not allowed (yet): try again soon, so blips start once you allow it.
             thread::sleep(Duration::from_secs(2));
@@ -62,24 +103,26 @@ extern "C" fn on_event(_proxy: *mut c_void, kind: u32, event: *mut c_void, _info
         TAP.with(|t| unsafe { CGEventTapEnable(*t.borrow(), true) });
         return event;
     }
+    let other = if matches!(kind, OTHER_DOWN | OTHER_UP) { unsafe { CGEventGetIntegerValueField(event, BUTTON_NUMBER_FIELD) } } else { 0 };
+    handle(kind, unsafe { CGEventGetLocation(event) }, other);
+    event
+}
+
+/// One button going down or up, at `at` (points from the top left of the main
+/// screen). `other`: which button, for the "other" events.
+fn handle(kind: u32, at: CGPoint, other: i64) {
     if !crate::effect::active() {
-        return event;
+        return;
     }
     let (button, down) = match kind {
         LEFT_DOWN => (Button::Left, true),
         LEFT_UP => (Button::Left, false),
         RIGHT_DOWN => (Button::Right, true),
         RIGHT_UP => (Button::Right, false),
-        OTHER_DOWN | OTHER_UP => {
-            // Only the wheel button (2); side buttons are 3 and up.
-            if unsafe { CGEventGetIntegerValueField(event, BUTTON_NUMBER_FIELD) } != 2 {
-                return event;
-            }
-            (Button::Middle, kind == OTHER_DOWN)
-        }
-        _ => return event,
+        // Only the wheel button (2); side buttons are 3 and up.
+        OTHER_DOWN | OTHER_UP if other == 2 => (Button::Middle, kind == OTHER_DOWN),
+        _ => return,
     };
-    let at = unsafe { CGEventGetLocation(event) };
     if down {
         PRESS.with(|p| p.borrow_mut()[button as usize] = Some(Press { at, skip: false }));
     } else if let Some(press) = PRESS.with(|p| p.borrow_mut()[button as usize].take()) {
@@ -88,7 +131,6 @@ extern "C" fn on_event(_proxy: *mut c_void, kind: u32, event: *mut c_void, _info
             DispatchQueue::main().exec_async(move || super::overlay::play(at, button));
         }
     }
-    event
 }
 
 // ------------------------------------------------------------

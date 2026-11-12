@@ -1,8 +1,9 @@
 // ============================================================
 // effect/linux/mod.rs
-// Blips on Linux: X11, and Wayland on KDE Plasma and Hyprland.
+// Blips on Linux: X11, and Wayland on KDE Plasma, Hyprland and GNOME.
 // ============================================================
 
+mod gnome;
 mod wayland;
 mod x11;
 
@@ -42,6 +43,7 @@ pub fn start() {
         Session::X11 => x11::start(),
         Session::Kde => wayland::start(wayland::Source::Kde),
         Session::Hyprland => wayland::start(wayland::Source::Hyprland),
+        Session::Gnome => gnome::start(),
         _ => {}
     }
 }
@@ -49,15 +51,10 @@ pub fn start() {
 pub fn unsupported_reason() -> Option<String> {
     match session() {
         Session::X11 => x11::unsupported_reason(),
-        Session::Kde | Session::Hyprland => None,
-        Session::Gnome => Some(
-            "GNOME on Wayland doesn't let apps draw over the screen, so blips can't show here yet. \
-             They work if you pick \"GNOME on Xorg\" at the login screen."
-                .into(),
-        ),
+        Session::Kde | Session::Hyprland | Session::Gnome => None,
         Session::OtherWayland => Some(
             "This desktop doesn't tell apps where the cursor is, so blips can't show here yet. \
-             They work on KDE Plasma, Hyprland and any X11 desktop."
+             They work on KDE Plasma, Hyprland, GNOME and any X11 desktop."
                 .into(),
         ),
         Session::None => Some("Blips need a desktop to show on (X11 or Wayland).".into()),
@@ -71,15 +68,45 @@ pub fn features() -> Features {
         Session::X11 => Features { text: true, links: true, taskbar: true, games: true, apps: true },
         // KDE says which window is under the cursor, so the app and the panels.
         Session::Kde => Features { text: false, links: false, taskbar: true, games: false, apps: true },
+        // The extension knows the window under the cursor, and GNOME's top bar and overview.
+        Session::Gnome => Features { text: false, links: false, taskbar: true, games: false, apps: true },
         _ => Features { text: false, links: false, taskbar: false, games: false, apps: false },
     }
 }
 
 pub fn needs_access() -> bool {
-    matches!(session(), Session::Kde | Session::Hyprland) && wayland::access::needed()
+    match session() {
+        Session::Kde => wayland::access::needed(),
+        Session::Gnome => !gnome::running(),
+        Session::Hyprland => {
+            // Hyprland gives the clicks itself; on a fresh start, give that a moment.
+            for _ in 0..10 {
+                if wayland::Finder::gives_clicks(wayland::Source::Hyprland) {
+                    return false;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            wayland::access::needed()
+        }
+        _ => false,
+    }
 }
 
 pub fn access_prompt() -> super::AccessPrompt {
+    if session() == Session::Gnome {
+        if gnome::waiting_for_login() {
+            return super::AccessPrompt {
+                text: "Almost done: log out and back in once, and blips start.",
+                button: "Set up again",
+                waits: false,
+            };
+        }
+        return super::AccessPrompt {
+            text: "On GNOME, blips are drawn by a small GNOME Shell extension that comes with Blip. No password needed.",
+            button: "Set up",
+            waits: false,
+        };
+    }
     super::AccessPrompt {
         text: "Blip needs your OK to see mouse clicks on this system. Your password is asked once.",
         button: "Allow",
@@ -88,9 +115,11 @@ pub fn access_prompt() -> super::AccessPrompt {
 }
 
 pub fn allow_access() -> Result<(), String> {
-    wayland::access::allow()
+    match session() {
+        Session::Gnome => gnome::set_up(),
+        _ => wayland::access::allow(),
+    }
 }
-
 fn program_of(pid: u32) -> Option<String> {
     let exe = std::fs::read_link(format!("/proc/{pid}/exe")).ok()?;
     Some(exe.file_name()?.to_string_lossy().to_lowercase())

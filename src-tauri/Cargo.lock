@@ -297,6 +297,7 @@ dependencies = [
 name = "blip"
 version = "2.1.0"
 dependencies = [
+ "block2",
  "dark-light",
  "dispatch2",
  "evdev",

@@ -22,6 +22,9 @@ pub enum Input {
     Release(Button),
     /// How far it moved (the mouse's own units), to tell a click from a drag.
     Moved(i32, i32),
+    /// From the desktop itself: the button and where the cursor was (px).
+    PressAt(Button, f64, f64),
+    ReleaseAt(Button, f64, f64),
 }
 
 fn event_files() -> Vec<PathBuf> {
