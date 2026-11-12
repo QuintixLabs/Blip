@@ -1,9 +1,6 @@
 // ============================================================
 // linux/mod.rs
-// Blips on Linux. X11 lets apps see clicks and draw over the screen.
-// Wayland doesn't, on purpose, so there Blip reads the mouse itself
-// and asks the desktop where the cursor is; that works on KDE Plasma
-// and Hyprland.
+// Blips on Linux: X11, and Wayland on KDE Plasma and Hyprland.
 // ============================================================
 
 // How it's split up:
@@ -16,7 +13,6 @@ mod x11;
 
 use super::Features;
 
-/// The kind of desktop Blip is running in.
 #[derive(Clone, Copy, PartialEq)]
 enum Session {
     X11,
@@ -100,14 +96,12 @@ pub fn allow_access() -> Result<(), String> {
     wayland::access::allow()
 }
 
-/// The file name of the program with this process id, lowercase ("firefox").
 fn program_of(pid: u32) -> Option<String> {
     let exe = std::fs::read_link(format!("/proc/{pid}/exe")).ok()?;
     Some(exe.file_name()?.to_string_lossy().to_lowercase())
 }
 
-/// The program is on the "skip these apps" list. `extra` is another name the
-/// desktop knows it by (KDE's desktop file name, like "org.kde.dolphin").
+/// `extra`: another name the desktop knows the app by (KDE's desktop file name).
 fn skipped_app(pid: u32, extra: &str) -> bool {
     let skipped = super::skipped_apps();
     if skipped.is_empty() {

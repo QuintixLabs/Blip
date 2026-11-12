@@ -1,27 +1,20 @@
 // ============================================================
 // linux/wayland/access.rs
-// On Wayland, Blip reads clicks straight from the mice and
-// touchpads (/dev/input). Linux only lets the person at the computer
-// do that when a small rule says so. The .deb and .rpm install the
-// rule; otherwise the Allow button does, after the system asks for
-// your password once. Keyboards are never included.
+// The permission to read mice and touchpads: a udev rule installed by the
+// .deb/.rpm or by the Allow button. Keyboards are never included.
 // ============================================================
 
 use std::{fs, path::Path, process::Command};
 
-/// The rule itself, shared with the .deb and .rpm.
 const RULE: &str = include_str!("../../../../installer/linux/70-blip.rules");
 
 const RULE_FILE: &str = "/etc/udev/rules.d/70-blip.rules";
 
-/// No mouse can be read yet, though there are some.
 pub fn needed() -> bool {
     let (readable, blocked) = super::mice::count();
     readable == 0 && blocked > 0
 }
 
-/// Installs the rule (the system shows its password prompt), then has it
-/// applied to the mice already plugged in. Blip picks them up right after.
 pub fn allow() -> Result<(), String> {
     let temp = std::env::temp_dir().join("blip-70.rules");
     fs::write(&temp, RULE).map_err(|e| format!("Couldn't prepare the rule: {e}"))?;

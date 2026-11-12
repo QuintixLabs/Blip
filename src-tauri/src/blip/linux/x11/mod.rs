@@ -1,9 +1,7 @@
 // ============================================================
 // linux/x11/mod.rs
-// X11: watches the mouse buttons everywhere, checks the rules, and
-// shows each blip in a small see-through window that clicks pass
-// through. Needs no special permission, only a compositor (most
-// desktops have one) so the windows can be see-through.
+// X11: blips need no special permission, only a compositor for
+// see-through windows.
 // ============================================================
 
 // Two threads, each with its own connection to X:
@@ -77,7 +75,7 @@ pub fn unsupported_reason() -> Option<String> {
     None
 }
 
-/// The screen's scaling: 1.0 at 96 dpi, 1.5 at 144 (from Xft.dpi, which desktops set).
+/// 1.0 at 96 dpi, from Xft.dpi.
 fn scale(conn: &RustConnection, root: Window, atoms: &Atoms) -> f64 {
     let text = conn
         .get_property(false, root, atoms.RESOURCE_MANAGER, AtomEnum::STRING, 0, 100_000)

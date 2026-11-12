@@ -1,8 +1,6 @@
 // ============================================================
 // windows/mod.rs
-// Windows: watches left, right and middle clicks everywhere, checks
-// the rules, and shows each blip in a small see-through window that
-// clicks pass through.
+// Blips on Windows.
 // ============================================================
 
 // Two threads:
@@ -26,7 +24,6 @@ use windows::Win32::Foundation::POINT;
 
 use crate::blip::Button;
 
-/// Clicks that should get a blip, on their way to the blips thread.
 static CLICKS: OnceLock<Mutex<Sender<(POINT, Button)>>> = OnceLock::new();
 
 pub fn start() {

@@ -18,10 +18,8 @@ use super::Pointer;
 
 const SERVICE: &str = "com.quintixlabs.blip.Cursor";
 
-/// Who's waiting for the script's answer.
 static WAITING: Mutex<Option<Sender<Pointer>>> = Mutex::new(None);
 
-/// What the KWin script calls with its answer.
 struct Reporter;
 
 // Everything comes as text: KWin sends whole numbers as integers and others as

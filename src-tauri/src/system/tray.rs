@@ -1,15 +1,7 @@
 // ============================================================
 // tray.rs
-// The tray icon next to the clock and its menu. Click opens Blip
-// (click again to close it); right-click shows the menu.
+// The tray icon and its menu: click opens or closes Blip, right-click shows the menu.
 // ============================================================
-
-//   Open Blip
-//   Settings
-//   ─────────
-//   Exit
-//
-// Blip shows blips while it runs; Exit stops it.
 
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
@@ -65,21 +57,17 @@ fn watch_theme(app: &AppHandle) {
     });
 }
 
-/// Called after every settings save (see Store::update). The menu never changes;
-/// only whether the icon shows.
+/// Called after every settings save; the menu never changes, only whether the icon shows.
 pub fn refresh(app: &AppHandle) {
     if let Some(tray) = app.tray_by_id(ID) {
         let _ = tray.set_visible(shown(app));
     }
 }
 
-/// "Tray icon" in Settings. Hidden, Blip is opened by starting it again
-/// (it's already running, so that just opens the window).
 fn shown(app: &AppHandle) -> bool {
     app.state::<Store>().get().settings.show_in_tray
 }
 
-/// Hover text while something is happening ("Updating to 2.0.1…"); None goes back to normal.
 pub fn set_status(app: &AppHandle, status: Option<&str>) {
     if let Some(tray) = app.tray_by_id(ID) {
         let text = status.map(|s| format!("Blip · {s}")).unwrap_or_else(|| "Blip".into());

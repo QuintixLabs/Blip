@@ -1,9 +1,7 @@
 // ============================================================
 // linux/wayland/mice.rs
-// Wayland: reads the mouse buttons straight from the mice and
-// touchpads (/dev/input), since Wayland doesn't tell apps about
-// clicks outside their own windows. Mice plugged in later are
-// picked up within a couple of seconds.
+// Reads the mouse buttons from /dev/input, picking up new mice as
+// they're plugged in.
 // ============================================================
 
 use std::{
@@ -19,7 +17,6 @@ use evdev::{Device, EventSummary, KeyCode, RelativeAxisCode};
 
 use crate::blip::Button;
 
-/// What happened on a mouse.
 pub enum Input {
     Press(Button),
     Release(Button),
@@ -32,7 +29,6 @@ fn event_files() -> Vec<PathBuf> {
     entries.flatten().map(|e| e.path()).filter(|p| p.file_name().is_some_and(|n| n.to_string_lossy().starts_with("event"))).collect()
 }
 
-/// Has a left button: a mouse, touchpad or trackball.
 fn is_pointer(device: &Device) -> bool {
     device.supported_keys().is_some_and(|keys| keys.contains(KeyCode::BTN_LEFT))
 }
@@ -50,7 +46,6 @@ pub fn count() -> (usize, usize) {
     (readable, blocked)
 }
 
-/// Starts reading every mouse, now and later. Each one gets its own thread.
 pub fn watch(events: Sender<Input>) {
     let open: Arc<Mutex<HashSet<PathBuf>>> = Arc::default();
     thread::Builder::new()
@@ -69,7 +64,6 @@ pub fn watch(events: Sender<Input>) {
                 let (open, events) = (open.clone(), events.clone());
                 let _ = thread::Builder::new().name("mouse".into()).spawn(move || {
                     read(device, &events);
-                    // Unplugged (or gone for another reason): may be opened again later.
                     open.lock().unwrap().remove(&path);
                 });
             }

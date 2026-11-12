@@ -1,7 +1,6 @@
 // ============================================================
-// clicks.rs
-// Windows: the mouse hook, and the rules that decide whether a click
-// gets a blip (text, links, the taskbar, games, skipped apps).
+// windows/clicks.rs
+// The mouse hook, and the rules that decide whether a click gets a blip.
 // ============================================================
 
 use std::cell::RefCell;
@@ -30,23 +29,19 @@ use windows::{
 
 use crate::blip::Button;
 
-/// Moving further than this (at 100 % scaling) while the button is down is a
-/// drag, not a click: no blip.
+/// Moving further than this (at 100 %) while held is a drag.
 const DRAG_PX: f64 = 40.0;
 
 // ------------------------------------------------------------
 // Watching clicks (left, right and middle)
 // ------------------------------------------------------------
 
-/// The click being held down right now.
 struct Press {
     at: POINT,
-    /// A rule said no when the button went down.
     skip: bool,
 }
 
 thread_local! {
-    /// One per button: left, right, middle.
     static PRESS: RefCell<[Option<Press>; 3]> = const { RefCell::new([None, None, None]) };
 }
 
@@ -122,7 +117,6 @@ fn skipped_on_release(at: POINT) -> bool {
     crate::blip::rules().taskbar && on_system_ui(at)
 }
 
-/// The cursor showing right now; None when it's hidden.
 fn current_cursor() -> Option<HCURSOR> {
     let mut info = CURSORINFO { cbSize: std::mem::size_of::<CURSORINFO>() as u32, ..Default::default() };
     unsafe { GetCursorInfo(&mut info).ok()? };
@@ -179,7 +173,6 @@ fn on_system_ui(at: POINT) -> bool {
     }
 }
 
-/// The program under the cursor is on the "skip these apps" list.
 fn in_skipped_app(at: POINT) -> bool {
     let skipped = crate::blip::skipped_apps();
     if skipped.is_empty() {
@@ -196,7 +189,6 @@ fn in_skipped_app(at: POINT) -> bool {
     }
 }
 
-/// The file name of the program that owns `hwnd`, lowercase ("searchhost.exe").
 fn program_of(hwnd: HWND) -> Option<String> {
     unsafe {
         let mut pid = 0u32;

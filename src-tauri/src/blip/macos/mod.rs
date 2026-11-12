@@ -1,17 +1,10 @@
 // ============================================================
 // macos/mod.rs
-// macOS: watches the mouse buttons everywhere (an event tap),
-// checks the rules, and shows each blip in a small see-through
-// window above everything that clicks pass through.
+// Blips on macOS.
 // ============================================================
 
-// Two parts:
-//   clicks  a thread with the event tap. macOS may want your OK first
-//           (Privacy & Security → Input Monitoring); until then it keeps
-//           trying every couple of seconds, so blips start once you allow it.
-//   blips   the windows live on the main thread, as macOS requires. While
-//           any blip plays, a small ticker asks the main thread for the
-//           next frame every few milliseconds.
+//   clicks  an event tap on its own thread, retried every 2 s until macOS allows it
+//   blips   windows on the main thread (macOS requires it), redrawn by a small ticker
 
 // How it's split up:
 //   ffi.rs      the macOS functions Blip calls, by their C names
@@ -32,7 +25,6 @@ use std::{
 use super::Features;
 use ffi::CGRequestListenEventAccess;
 
-/// The event tap is running: blips work.
 static TAP_OK: AtomicBool = AtomicBool::new(false);
 
 pub fn start() {
@@ -44,7 +36,6 @@ pub fn unsupported_reason() -> Option<String> {
 }
 
 pub fn features() -> Features {
-    // The window under the cursor gives the app, and the menu bar and Dock.
     Features { text: false, links: false, taskbar: true, games: false, apps: true }
 }
 

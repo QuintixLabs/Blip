@@ -1,7 +1,6 @@
 // ============================================================
 // linux/x11/clicks.rs
-// X11: hears every button press and release, and checks the rules
-// (text and link cursors, a hidden cursor, panels, skipped apps).
+// X11: hears every click and checks the rules.
 // ============================================================
 
 use std::sync::mpsc::Sender;
@@ -21,8 +20,7 @@ use crate::blip::Button;
 
 use super::{scale, Atoms};
 
-/// Moving further than this (at 100 % scaling) while a button is down is a
-/// drag, not a click: no blip.
+/// Moving further than this (at 100 %) while held is a drag.
 const DRAG_PX: f64 = 40.0;
 
 // ------------------------------------------------------------
@@ -31,7 +29,6 @@ const DRAG_PX: f64 = 40.0;
 
 struct Press {
     at: (i16, i16),
-    /// A rule said no when the button went down.
     skip: bool,
 }
 
@@ -81,7 +78,6 @@ pub(super) fn watch_clicks(blips: Sender<(f64, f64, Button)>) -> Option<()> {
     }
 }
 
-/// Text cursor, link cursor, or a hidden cursor (a game).
 fn skipped_on_press(conn: &RustConnection) -> bool {
     let rules = crate::blip::rules();
     let Some(cursor) = conn.xfixes_get_cursor_image_and_name().ok().and_then(|c| c.reply().ok()) else { return false };
@@ -96,7 +92,6 @@ fn skipped_on_press(conn: &RustConnection) -> bool {
     rules.games && hidden
 }
 
-/// On a panel (the taskbar), or in a skipped app.
 fn skipped_on_release(conn: &RustConnection, atoms: &Atoms, top: Window) -> bool {
     if top == 0 {
         return false;

@@ -18,7 +18,6 @@ const TRAY: &[u8] = include_bytes!("../../icons/app/32x32.png");
 #[cfg(target_os = "linux")]
 const TRAY: &[u8] = include_bytes!("../../icons/runtime/tray.png");
 
-/// The last light/dark seen by taskbar_is_light(), kept current by the tray.
 static LIGHT: AtomicBool = AtomicBool::new(false);
 
 pub fn remember_light(light: bool) {

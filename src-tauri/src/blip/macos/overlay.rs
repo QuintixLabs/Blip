@@ -22,7 +22,6 @@ use tiny_skia::Pixmap;
 use super::ffi::*;
 use crate::blip::{shared::draw, shared::style::Style, Button};
 
-/// Above the menu bar, the Dock and full-screen apps.
 const LEVEL: isize = 1000; // NSScreenSaverWindowLevel
 
 // ------------------------------------------------------------
@@ -42,7 +41,6 @@ thread_local! {
     static BLIPS: RefCell<Vec<Blip>> = const { RefCell::new(Vec::new()) };
 }
 
-/// A ticker is asking the main thread for frames.
 static TICKING: AtomicBool = AtomicBool::new(false);
 
 /// Starts a blip centered on `at` (screen points, from the top left of the main screen).
@@ -89,7 +87,6 @@ pub(super) fn play(at: CGPoint, button: Button) {
     start_ticking();
 }
 
-/// While blips play, asks the main thread for a frame about every 8 ms.
 fn start_ticking() {
     if TICKING.swap(true, Ordering::AcqRel) {
         return;
@@ -105,7 +102,6 @@ fn start_ticking() {
         .ok();
 }
 
-/// The next frame of every blip; finished ones close.
 fn draw_frame() {
     BLIPS.with(|blips| {
         let mut blips = blips.borrow_mut();
@@ -135,7 +131,6 @@ extern "C" fn free_pixels(info: *mut c_void, _data: *const c_void, _size: usize)
     drop(unsafe { Box::from_raw(info as *mut Vec<u8>) });
 }
 
-/// Puts the picture on the window's layer.
 fn show(layer: &objc2_quartz_core::CALayer, pixmap: &Pixmap) {
     let (w, h) = (pixmap.width() as usize, pixmap.height() as usize);
     // Premultiplied RGBA, as tiny-skia gives it. The image owns its copy.

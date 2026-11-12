@@ -17,7 +17,6 @@ pub enum Shape {
     Diamond,
 }
 
-/// The settings a blip needs, ready to use.
 #[derive(Clone, Copy)]
 pub struct Style {
     pub shape: Shape,
@@ -52,7 +51,6 @@ impl Style {
         }
     }
 
-    /// The bigger of the two sizes: room a blip needs, in px at 100 %.
     pub fn largest(&self) -> f32 {
         self.start_size.max(self.end_size)
     }

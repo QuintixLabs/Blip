@@ -1,6 +1,6 @@
 // ============================================================
 // linux/wayland/hyprland.rs
-// Hyprland: where the cursor is, from Hyprland's control socket.
+// Where the cursor is, from Hyprland's control socket.
 // ============================================================
 
 use std::{

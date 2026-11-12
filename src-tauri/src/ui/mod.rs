@@ -18,7 +18,6 @@ fn browser_data(app: &AppHandle) -> Option<PathBuf> {
     app.path().local_data_dir().ok().map(|dir| dir.join("Blip").join("WebView"))
 }
 
-/// Starts a window for a page in src/ ("index.html").
 fn builder<'a>(app: &'a AppHandle, label: impl Into<String>, page: &str) -> WebviewWindowBuilder<'a, tauri::Wry, AppHandle> {
     let mut builder = WebviewWindowBuilder::new(app, label, WebviewUrl::App(page.into()));
     // On Linux the page can't always tell when the desktop switches between

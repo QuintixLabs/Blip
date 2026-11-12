@@ -1,8 +1,7 @@
 // ============================================================
 // linux/wayland/mod.rs
-// Wayland (KDE Plasma, Hyprland): turns the mouse buttons into blips.
-// On release it asks the desktop where the cursor is, checks the rules,
-// and shows the blip above everything (overlay.rs).
+// Turns mouse buttons into blips: asks the desktop where the cursor
+// is, checks the rules and shows the blip.
 // ============================================================
 
 // How it's split up:
@@ -27,8 +26,7 @@ use std::{
 use crate::blip::Button;
 use mice::Input;
 
-/// Moving further than this (in the mouse's own units) while a button is down
-/// is a drag, not a click: no blip.
+/// Moving further than this while held is a drag (in the mouse's own units).
 const DRAG: i64 = 60;
 
 /// BLIP_DEBUG=1 prints every click, for testing.
@@ -67,7 +65,6 @@ pub fn start(source: Source) {
 // ------------------------------------------------------------
 
 fn watch_clicks(finder: &Finder, input: Receiver<Input>, play: impl Fn(f64, f64, Button)) {
-    // How far each button has moved since it went down; None while it's up.
     let mut held: [Option<(i64, i64)>; 3] = [None; 3];
     for event in input {
         match event {
@@ -106,14 +103,12 @@ fn watch_clicks(finder: &Finder, input: Receiver<Input>, play: impl Fn(f64, f64,
 // Asking the desktop where the cursor is
 // ------------------------------------------------------------
 
-/// Which desktop to ask.
 #[derive(Clone, Copy)]
 pub enum Source {
     Kde,
     Hyprland,
 }
 
-/// Where the cursor is (screen position, in the desktop's own units) and what's under it.
 pub struct Pointer {
     pub x: f64,
     pub y: f64,
@@ -121,7 +116,6 @@ pub struct Pointer {
     pub pid: u32,
     /// Another name the desktop knows that program by (KDE: its desktop file).
     pub app: String,
-    /// The window under the cursor is a panel (the taskbar).
     pub panel: bool,
 }
 

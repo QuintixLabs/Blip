@@ -75,17 +75,14 @@ fn main() {
                 updates::install_on_exit(app);
             }
         }
-        // macOS: opening Blip while it runs (Finder, Spotlight, Launchpad) doesn't
-        // start a second copy; macOS asks the running one to reopen instead. Treat it
-        // like opening it again anywhere else, so it can always be reached, even
-        // with the tray icon hidden.
+        // macOS: opening a running app asks it to reopen instead of starting a
+        // second copy, so it opens the window like a second start does elsewhere.
         #[cfg(target_os = "macos")]
         RunEvent::Reopen { .. } => main_window::open_async(app),
         _ => {}
     });
 }
 
-/// What this start should show, then start the update checker.
 fn open_on_start(app: &AppHandle) {
     let at_login = startup::launched_at_login();
     let show_welcome = app.state::<settings::Store>().get().settings.show_welcome;

@@ -1,15 +1,13 @@
 // ============================================================
 // notifications.rs
-// Blip's notifications ("Blip was updated", "Update available"),
-// shown as real system notifications.
+// Blip's notifications ("Blip was updated", "Update available").
 // ============================================================
 
 use tauri::{AppHandle, Manager};
 
 use crate::app::settings::Store;
 
-/// Update news. These stay in the notification center. Nothing shows while
-/// Notifications is off in Settings.
+/// Shown only while Notifications is on in Settings.
 pub fn info(app: &AppHandle, title: &str, body: &str) {
     if !app.state::<Store>().get().settings.notifications {
         return;
@@ -28,11 +26,9 @@ fn app_id(app: &AppHandle) -> String {
     app.config().identifier.clone()
 }
 
-/// Windows only shows notifications from apps it knows, and silently drops the
-/// rest. The installer's Start menu shortcut introduces Blip, but that's
-/// missing in a dev build, a copy run without installing, or after the shortcut
-/// is removed. So Blip introduces itself at every start: its name and icon,
-/// under the current user. The uninstaller removes it again (see hooks.nsh).
+/// Windows drops notifications from apps it doesn't know. The Start menu shortcut
+/// introduces Blip, but a dev build or a copy run without installing has none,
+/// so Blip introduces itself at every start. The uninstaller removes it (hooks.nsh).
 pub fn register(app: &AppHandle) {
     #[cfg(windows)]
     if let Err(err) = platform::register(app, &app_id(app)) {
@@ -67,7 +63,6 @@ mod platform {
         text.replace('&', "&amp;").replace('<', "&lt;").replace('>', "&gt;").replace('"', "&quot;")
     }
 
-    /// The icon notifications show next to "Blip".
     const ICON: &[u8] = include_bytes!("../../icons/app/128x128.png");
 
     pub fn register(app: &AppHandle, app_id: &str) -> Result<(), String> {

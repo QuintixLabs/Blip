@@ -1,7 +1,6 @@
 // ============================================================
-// overlay.rs
-// Windows: the see-through windows the blips play in, one frame per
-// screen refresh.
+// windows/overlay.rs
+// The see-through windows the blips play in, one frame per screen refresh.
 // ============================================================
 
 use std::{
@@ -43,7 +42,6 @@ const MAX_BLIPS: usize = 16;
 // Showing blips
 // ------------------------------------------------------------
 
-/// One see-through window and the picture it shows.
 struct Slot {
     hwnd: HWND,
     dc: HDC,
@@ -52,14 +50,12 @@ struct Slot {
     bits: *mut u8,
     side: u32,
     pixmap: Pixmap,
-    /// The blip playing in it, if any.
     playing: Option<Playing>,
 }
 
 struct Playing {
     style: Style,
     started: Instant,
-    /// Top left of the window on screen.
     at: POINT,
     scale: f32,
 }
@@ -118,7 +114,6 @@ impl Blips {
         }
     }
 
-    /// Starts a blip centered on `click`, in the color of the button that made it.
     fn play(&mut self, click: POINT, button: Button) {
         let Some(style) = crate::blip::style_for(button) else { return };
         let scale = scale_at(click) as f32;
@@ -131,7 +126,6 @@ impl Blips {
         self.draw_slot(index, true);
     }
 
-    /// A window with room for `side` px, reusing the oldest blip when all are busy.
     fn free_slot(&mut self, side: u32) -> Option<usize> {
         let index = match self.slots.iter().position(|s| s.playing.is_none()) {
             Some(i) => i,
@@ -176,7 +170,6 @@ impl Blips {
     }
 }
 
-/// Blip windows never get input; everything goes to Windows' default handling.
 unsafe extern "system" fn window_proc(hwnd: HWND, msg: u32, wparam: WPARAM, lparam: LPARAM) -> LRESULT {
     DefWindowProcW(hwnd, msg, wparam, lparam)
 }
@@ -214,7 +207,6 @@ impl Slot {
         }
     }
 
-    /// A new picture size: new bitmap and pixmap.
     fn resize(&mut self, screen: HDC, side: u32) -> Option<()> {
         unsafe {
             let info = BITMAPINFO {
@@ -245,7 +237,6 @@ impl Slot {
         }
     }
 
-    /// Puts the pixmap on screen at `at` (the window's top left).
     fn show(&mut self, screen: HDC, at: POINT, first: bool) {
         unsafe {
             // tiny-skia gives premultiplied RGBA; the bitmap wants premultiplied BGRA.

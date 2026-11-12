@@ -1,7 +1,6 @@
 // ============================================================
 // commands.rs
-// Everything the window can ask the app to do: save settings,
-// check for updates, open a link, and so on.
+// What the window can ask the app to do.
 // ============================================================
 
 // Anything that touches windows is async: plain commands run on the UI
@@ -45,15 +44,13 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
     Ok(data)
 }
 
-/// "Reset all settings": back to the defaults, keeping the welcome screen done.
 #[tauri::command]
 pub async fn reset_settings(app: AppHandle, store: State<'_, Store>) -> Result<Data, String> {
     let settings = Settings { show_welcome: false, ..Settings::default() };
     save_settings(app, store, settings).await
 }
 
-/// The Blip page's "Reset to defaults": everything on that page goes back to
-/// how Blip comes. The Settings page's choices stay.
+/// The Blip page's "Reset to defaults": only that page's settings.
 #[tauri::command]
 pub async fn reset_look(app: AppHandle, store: State<'_, Store>) -> Result<Data, String> {
     let d = Settings::default();
@@ -81,13 +78,11 @@ pub async fn reset_look(app: AppHandle, store: State<'_, Store>) -> Result<Data,
     save_settings(app, store, settings).await
 }
 
-/// "Skip these apps": installed and open programs, with names and icons.
 #[tauri::command]
 pub async fn list_apps() -> Vec<apps::AppInfo> {
     tauri::async_runtime::spawn_blocking(apps::all).await.unwrap_or_default()
 }
 
-/// "Browse...": a program picked from disk; None when the picker is cancelled.
 #[tauri::command]
 pub async fn browse_app(app: AppHandle) -> Option<apps::AppInfo> {
     use tauri_plugin_dialog::DialogExt;
@@ -100,7 +95,6 @@ pub async fn browse_app(app: AppHandle) -> Option<apps::AppInfo> {
     tauri::async_runtime::spawn_blocking(move || apps::info_for(&path)).await.ok()
 }
 
-/// Whether blips work on this system, and which "Show on" rules it can check.
 #[tauri::command]
 pub async fn blip_info() -> blip::Info {
     tauri::async_runtime::spawn_blocking(blip::info).await.unwrap_or(blip::Info {
@@ -113,7 +107,6 @@ pub async fn blip_info() -> blip::Info {
     })
 }
 
-/// The Allow button (Linux on Wayland): the system asks for your password once.
 #[tauri::command]
 pub async fn blip_allow_access() -> Result<(), String> {
     tauri::async_runtime::spawn_blocking(blip::allow_access).await.map_err(|e| e.to_string())?
@@ -133,7 +126,6 @@ pub async fn install_update(app: AppHandle) -> Result<(), String> {
     updates::install(&app).await
 }
 
-/// Version of a downloaded update waiting to install, if any.
 #[tauri::command]
 pub async fn pending_update(app: AppHandle) -> Option<String> {
     updates::ready_version(&app)
@@ -143,7 +135,7 @@ pub async fn pending_update(app: AppHandle) -> Option<String> {
 // Links and folders
 // ------------------------------------------------------------
 
-/// Footer links. Only these addresses can be opened from the window.
+/// The only addresses the window can open.
 const LINKS: [(&str, &str); 3] = [
     ("github", "https://github.com/QuintixLabs/Blip"),
     ("website", "https://itsblip.netlify.app"),
@@ -157,7 +149,6 @@ pub async fn open_link(app: AppHandle, name: String) -> Result<(), String> {
     app.opener().open_url(*url, None::<&str>).map_err(|e| e.to_string())
 }
 
-/// The folder button in "Skip these apps": shows that program in the file manager.
 #[tauri::command]
 pub async fn reveal_app(app: AppHandle, path: String) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;
@@ -167,7 +158,6 @@ pub async fn reveal_app(app: AppHandle, path: String) -> Result<(), String> {
     app.opener().reveal_item_in_dir(&path).map_err(|e| e.to_string())
 }
 
-/// "Open settings folder": shows blip.json in the file manager.
 #[tauri::command]
 pub async fn open_settings_folder(app: AppHandle) -> Result<(), String> {
     use tauri_plugin_opener::OpenerExt;

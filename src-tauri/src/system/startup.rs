@@ -15,7 +15,6 @@ pub fn plugin() -> TauriPlugin<Wry> {
     tauri_plugin_autostart::init(MacosLauncher::LaunchAgent, Some(vec![FLAG]))
 }
 
-/// This run was started by the system at login.
 pub fn launched_at_login() -> bool {
     std::env::args().any(|arg| arg == FLAG)
 }

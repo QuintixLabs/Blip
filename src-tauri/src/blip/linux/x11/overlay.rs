@@ -51,7 +51,6 @@ pub(super) fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
 
     let mut blips: Vec<Blip> = Vec::new();
     loop {
-        // Idle: wait for a click. Playing: take any new ones and draw the next frame.
         let next = if blips.is_empty() {
             match clicks.recv_timeout(Duration::from_millis(500)) {
                 Ok(click) => Some(click),

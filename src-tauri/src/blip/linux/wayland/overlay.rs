@@ -73,7 +73,6 @@ pub(super) fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
         pool,
         blips: Vec::new(),
     };
-    // Learn the screens before the first click.
     queue.roundtrip(&mut overlay).ok()?;
 
     loop {
@@ -87,7 +86,6 @@ pub(super) fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
         overlay.draw();
         queue.flush().ok()?;
 
-        // Wait for the compositor, or until the next frame (or next look for clicks).
         let wait_ms = if overlay.blips.is_empty() { 25 } else { 8 };
         if let Some(guard) = queue.prepare_read() {
             let mut fd = libc::pollfd { fd: guard.connection_fd().as_raw_fd(), events: libc::POLLIN, revents: 0 };
@@ -100,7 +98,6 @@ pub(super) fn run_overlay(clicks: Receiver<(f64, f64, Button)>) -> Option<()> {
 }
 
 impl Overlay {
-    /// Starts a blip centered on (x, y), the desktop's screen position.
     fn play(&mut self, x: f64, y: f64, button: Button, qh: &QueueHandle<Self>) {
         let Some(style) = crate::blip::style_for(button) else { return };
         let screen = self.outputs.outputs().find_map(|output| {
@@ -138,7 +135,6 @@ impl Overlay {
         self.blips.push(Blip { layer, style, started: Instant::now(), scale, configured: false, pixmap });
     }
 
-    /// The next frame of every blip; finished ones are removed.
     fn draw(&mut self) {
         let pool = &mut self.pool;
         self.blips.retain_mut(|blip| {

@@ -1,15 +1,12 @@
 // ============================================================
 // updates.rs
-// Checking for, downloading and installing new versions from
-// GitHub Releases.
+// Checking for, downloading and installing new versions.
 // ============================================================
 
-// Manual:     Settings → Check for updates. Installs right away and reopens.
-// Automatic:  at most every 6 hours. Downloads quietly, then installs when
-//             Blip's window isn't open (Blip restarts into the tray, so blips
-//             only pause for a moment), or as Blip exits.
-// Every update is signed; the app refuses anything that isn't. Windows installs
-// in "quiet" mode, so no installer window ever shows.
+// Manual:     Settings -> Check for updates; installs right away and reopens.
+// Automatic:  at every start and every 6 hours; installs once the window is
+//             closed (restarting into the tray) or as Blip exits.
+// Updates are signed; anything unsigned is refused.
 
 use std::{
     sync::{
@@ -35,9 +32,7 @@ const REQUEST_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Default)]
 pub struct Pending {
-    /// Found by the Settings button, waiting for its install.
     found: Mutex<Option<Update>>,
-    /// Downloaded automatically, waiting for a quiet moment.
     ready: Mutex<Option<(Update, Vec<u8>)>>,
     busy: AtomicBool,
 }
@@ -57,7 +52,6 @@ fn updater(app: &AppHandle) -> Result<tauri_plugin_updater::Updater, String> {
 // Manual (Settings → Check for updates)
 // ------------------------------------------------------------
 
-/// Returns the new version, or None when already up to date.
 pub async fn check(app: &AppHandle) -> Result<Option<String>, String> {
     let update = updater(app)?.check().await.map_err(|e| e.to_string())?;
     let version = update.as_ref().map(|u| u.version.clone());
@@ -65,7 +59,6 @@ pub async fn check(app: &AppHandle) -> Result<Option<String>, String> {
     Ok(version)
 }
 
-/// Emits "update-progress" (0–100) while downloading, then installs and reopens.
 pub async fn install(app: &AppHandle) -> Result<(), String> {
     let pending = app.state::<Pending>();
     let ready = pending.ready.lock().unwrap().take();
@@ -97,7 +90,7 @@ pub async fn install(app: &AppHandle) -> Result<(), String> {
 // Automatic
 // ------------------------------------------------------------
 
-/// Starts the background checker. `delay` lets a login start settle first.
+/// `delay` lets a login start settle first.
 pub fn start_auto(app: &AppHandle, delay: Duration) {
     if cfg!(debug_assertions) {
         return; // a dev build must never replace itself with a release
@@ -140,7 +133,6 @@ fn auto_update(app: &AppHandle) {
             match bytes {
                 Ok(bytes) => {
                     *pending.ready.lock().unwrap() = Some((update, bytes));
-                    // An open window shows "Blip 2.0.1 is ready. Restart to update now?"
                     let _ = app.emit("update-ready", &version);
                     install_when_idle(app);
                 }
@@ -159,7 +151,6 @@ fn installs_silently() -> bool {
     )
 }
 
-/// Installs once Blip's window is closed. Blip restarts straight into the tray.
 fn install_when_idle(app: &AppHandle) {
     loop {
         if app.state::<Pending>().ready.lock().unwrap().is_none() {
@@ -178,7 +169,6 @@ fn install_when_idle(app: &AppHandle) {
     }
 }
 
-/// Called as Blip exits: a downloaded update installs now, without reopening.
 pub fn install_on_exit(app: &AppHandle) {
     let ready = app.state::<Pending>().ready.lock().unwrap().take();
     if let Some((update, bytes)) = ready {
@@ -208,13 +198,11 @@ fn apply(app: &AppHandle, update: Update, bytes: &[u8], mode: &str) -> Result<()
     Ok(())
 }
 
-/// Live status for Settings → Updates and the tray hover text. None = back to normal.
 fn status(app: &AppHandle, text: Option<&str>) {
     let _ = app.emit("update-status", text);
     tray::set_status(app, text);
 }
 
-/// A downloaded update waiting to install, so a newly opened window can show its bar.
 /// "Update automatically" switched off: a downloaded update waiting to install is
 /// dropped, so Blip stays on this version.
 pub fn cancel(app: &AppHandle) {

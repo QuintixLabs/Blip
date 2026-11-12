@@ -17,7 +17,7 @@ use dispatch2::DispatchQueue;
 use super::ffi::*;
 use crate::blip::Button;
 
-/// Moving further than this (in points) while a button is down is a drag, not a click.
+/// Moving further than this (in points) while held is a drag.
 const DRAG_PT: f64 = 40.0;
 
 // ------------------------------------------------------------
@@ -107,7 +107,6 @@ const PANELS: [&str; 8] = [
     "Spotlight",
 ];
 
-/// What's on screen under `at`: (owner's pid, owner's name, window layer).
 fn window_at(at: CGPoint) -> Option<(i64, String, i64)> {
     unsafe {
         // On-screen windows, front to back, without the desktop.
@@ -157,7 +156,6 @@ fn skipped_at(at: CGPoint) -> bool {
     !skipped.is_empty() && program_of(pid).is_some_and(|p| skipped.contains(&p))
 }
 
-/// The program file's name for a pid, lowercase ("safari").
 fn program_of(pid: i64) -> Option<String> {
     let mut buf = vec![0u8; 4096];
     let len = unsafe { libc::proc_pidpath(pid as i32, buf.as_mut_ptr() as *mut c_void, buf.len() as u32) };

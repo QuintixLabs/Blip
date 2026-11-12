@@ -49,7 +49,6 @@ pub fn frame(pixmap: &mut Pixmap, style: &Style, size: f32, opacity: f32) {
     }
 }
 
-/// A regular polygon with `sides` corners, the first at `start_deg`.
 fn polygon(cx: f32, cy: f32, r: f32, sides: u32, start_deg: f32) -> Option<tiny_skia::Path> {
     let mut pb = PathBuilder::new();
     for i in 0..sides {

@@ -1,15 +1,13 @@
 // ============================================================
 // blip/mod.rs
-// The blip itself: watches your clicks everywhere and shows a
-// growing, fading shape where you clicked, unless a rule says not to.
+// The blip itself: a growing, fading shape wherever you click,
+// unless a rule says not to.
 // ============================================================
 
 // How it's split up:
-//   shared/        what every system uses: how a blip looks and moves, drawing it
-//   windows/       Windows: watching clicks, the rules, putting blips on screen
-//   linux/         Linux: X11, and Wayland on KDE Plasma and Hyprland
-//   macos/         macOS: watching clicks, the rules, putting blips on screen
-//   unsupported.rs systems Blip can't show blips on (it says why)
+//   shared/                 how a blip moves, and drawing it
+//   windows/ linux/ macos/  each system's click watcher, rules and overlay
+//   unsupported.rs          systems without blips (the window says why)
 
 mod shared;
 
@@ -53,14 +51,11 @@ pub struct Features {
     pub apps: bool,
 }
 
-/// What the window needs to know about blips here.
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Info {
-    /// Why blips can't show on this system, if they can't.
     pub reason: Option<String>,
-    /// Blips work here once Blip may see clicks (Linux on Wayland, macOS); the
-    /// window then shows ccess_text and a button labelled ccess_button.
+    /// Blips need the user's OK first; the window shows `access_text` and `access_button`.
     pub needs_access: bool,
     pub access_text: &'static str,
     pub access_button: &'static str,
@@ -70,7 +65,6 @@ pub struct Info {
     pub features: Features,
 }
 
-/// How a system asks for the OK to see clicks.
 pub struct AccessPrompt {
     pub text: &'static str,
     pub button: &'static str,
@@ -86,22 +80,16 @@ impl AccessPrompt {
 #[derive(Clone, Copy)]
 #[allow(dead_code)]
 pub struct Rules {
-    /// The text cursor (I-beam) is showing: typing, selecting text.
     pub text_cursor: bool,
-    /// The link cursor (hand) is showing.
     pub link_cursor: bool,
-    /// The taskbar, Start menu and other system panels (Windows draws them above all apps).
     pub taskbar: bool,
-    /// A game holds or hides the cursor, or runs full screen.
     pub games: bool,
 }
 
-/// Programs on the "skip these apps" list, lowercase file names.
 fn skipped_apps() -> std::sync::RwLockReadGuard<'static, Vec<String>> {
     live().skip_apps.read().unwrap()
 }
 
-/// The mouse button a click came from.
 #[derive(Clone, Copy)]
 pub enum Button {
     Left,
@@ -144,7 +132,6 @@ fn rules_of(s: &Settings) -> Rules {
     Rules { text_cursor: s.skip_text_cursor, link_cursor: s.skip_link_cursor, taskbar: s.skip_taskbar, games: s.skip_games }
 }
 
-/// Starts watching clicks. Called once at startup.
 pub fn start(settings: &Settings) {
     apply(settings);
     platform::start();
@@ -160,7 +147,6 @@ pub fn apply(settings: &Settings) {
     live.active.store(!settings.show_welcome, Ordering::Relaxed);
 }
 
-/// For the window: whether blips work here, and which rules can be checked.
 pub fn info() -> Info {
     let prompt = platform::access_prompt();
     Info {
@@ -173,13 +159,10 @@ pub fn info() -> Info {
     }
 }
 
-/// The Allow button: lets Blip see clicks (Linux on Wayland), or opens the
-/// place to switch that on (macOS).
 pub fn allow_access() -> Result<(), String> {
     platform::allow_access()
 }
 
-/// The blip for a click with that button, in that button's color; None when that button is off.
 fn style_for(button: Button) -> Option<Style> {
     let color = live().colors.read().unwrap()[button as usize]?;
     Some(Style { color, ..*live().style.read().unwrap() })

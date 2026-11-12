@@ -31,7 +31,6 @@ pub fn open_async(app: &AppHandle) {
     });
 }
 
-/// Opens the window on a page ("settings").
 pub fn open_page_async(app: &AppHandle, page: &'static str) {
     let app = app.clone();
     thread::spawn(move || {
@@ -39,7 +38,6 @@ pub fn open_page_async(app: &AppHandle, page: &'static str) {
     });
 }
 
-/// Tray click: opens the window, or closes it if it's already open.
 pub fn toggle_async(app: &AppHandle) {
     let app = app.clone();
     thread::spawn(move || match window(&app) {
@@ -56,7 +54,6 @@ pub fn toggle_async(app: &AppHandle) {
 /// Set when the tray icon closes the window: that hides it, even with Close to tray off.
 static CLOSED_FROM_TRAY: AtomicBool = AtomicBool::new(false);
 
-/// Whether Blip keeps running once its window is closed.
 pub fn stays_in_tray(app: &AppHandle) -> bool {
     CLOSED_FROM_TRAY.swap(false, Ordering::Relaxed) || app.state::<Store>().get().settings.close_to_tray
 }
