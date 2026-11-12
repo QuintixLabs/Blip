@@ -1,8 +1,6 @@
 // ============================================================
 // colors.js
-// The color dots: a few ready colors and "Custom" (the system's
-// color picker). Each row says which setting it changes with
-// data-colors: color (left click), rightColor or middleColor.
+// The color dots: ready colors and Custom (the system's color picker).
 // ============================================================
 
 import { $$, onRender, save } from '../state.js';
@@ -21,7 +19,6 @@ const PRESETS = [
 
 const sameColor = (a, b) => a.toUpperCase() === b.toUpperCase();
 
-/** Each color's on/off switch (Blip page, Mouse buttons). */
 const SWITCH = { color: 'leftClick', rightColor: 'rightClick', middleColor: 'middleClick' };
 
 function render(state) {
@@ -44,7 +41,6 @@ for (const el of $$('[data-colors]')) {
     const button = e.target.closest('[data-color]');
     if (button) save({ [el.dataset.colors]: button.dataset.color });
   });
-  // The system color picker: saved once you've chosen.
   el.addEventListener('change', (e) => {
     if (e.target.type === 'color') save({ [el.dataset.colors]: e.target.value.toUpperCase() });
   });

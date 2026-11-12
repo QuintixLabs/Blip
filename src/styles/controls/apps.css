@@ -1,7 +1,6 @@
 /* ============================================================
    apps.css
-   Show on → Apps: the chips for skipped apps, and the
-   "Skip these apps" list.
+   Show on → Apps: the chips and the Choose apps dialog.
    ============================================================ */
 
 /* ------------------------------------------------------------
@@ -44,7 +43,6 @@
   transform: translateY(1px);
 }
 
-/* The name opens the app's folder, when Blip knows where it is. */
 .app-chip.has-folder .app-chip-name {
   cursor: pointer;
   transition: color 120ms;
@@ -79,7 +77,6 @@
   height: 12px;
 }
 
-/* Icons read from the app, or a plain window when it isn't open. */
 img.app-icon {
   display: block;
   flex: none;
@@ -134,8 +131,7 @@ i.app-icon {
   color: var(--faint);
 }
 
-/* All, Skipped and Browsed above the search: which apps the list shows. A small,
-   narrow version of the segmented control. */
+/* A small version of the segmented control. */
 .apps-filters {
   display: flex;
   width: fit-content;
@@ -201,7 +197,6 @@ i.app-icon {
   margin-top: 2px;
 }
 
-/* Ticked: a soft accent background, easy to spot while scrolling. */
 .app-item.is-checked {
   background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
@@ -250,7 +245,6 @@ i.app-icon {
   text-align: center;
 }
 
-/* Browse on the left, Done on the right. */
 .dialog-actions.apps-actions {
   align-items: center;
   justify-content: space-between;

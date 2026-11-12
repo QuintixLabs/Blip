@@ -1,9 +1,6 @@
 /* ============================================================
    reveal.css
-   Notes and warnings that come and go (see components/reveal.js).
-   Closed, they take no room; opening, they grow to their natural
-   height while fading in, so what's under them slides instead of
-   jumping. The browser does the sizing, so it always lands exactly.
+   Notes and warnings that grow open and closed (see components/reveal.js).
    ============================================================ */
 
 .reveal {

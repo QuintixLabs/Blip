@@ -1,8 +1,6 @@
 /* ============================================================
    blip.css
-   The Blip page: the mouse button rows, the taskbar warning, and the
-   note shown when blips can't work on this system (also on the
-   welcome screen).
+   The Blip page.
    ============================================================ */
 
 .page-hint {
@@ -27,7 +25,6 @@
   line-height: 1.45;
 }
 
-/* With the Allow button: the text, then the button on the right. */
 .notice-action {
   display: flex;
   flex-wrap: wrap;

@@ -1,7 +1,6 @@
 /* ============================================================
    sidebar.css
-   The sidebar: logo, pages, and folding it
-   down to icons.
+   The sidebar, and folding it to icons.
    ============================================================ */
 
 /* Every icon sits at the same spot (32px from the left) open or folded,
@@ -25,7 +24,6 @@
   width: 64px;
 }
 
-/* The welcome screen uses the whole window. */
 .is-welcome .sidebar {
   display: none;
 }

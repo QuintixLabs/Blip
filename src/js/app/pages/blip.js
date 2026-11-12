@@ -1,9 +1,7 @@
 // ============================================================
 // blip.js
-// The Blip page: how a blip looks and where it shows. The controls
-// themselves are in controls/ (shapes, colors, sliders, apps); this has
-// the taskbar warning, Reset to defaults, the note shown when blips
-// can't work on this system, and the Allow button some Linux desktops need.
+// The Blip page: the taskbar warning, Reset to defaults, and the note
+// when blips can't work here or need the user's OK.
 // ============================================================
 
 import { $, $$, app, invoke, onRender, render, status } from '../state.js';
@@ -35,7 +33,6 @@ const EVERYTHING = { text: true, links: true, taskbar: true, games: true, apps: 
 const FALLBACK = { reason: null, needsAccess: false, features: EVERYTHING };
 const getInfo = () => invoke('blip_info').catch(() => FALLBACK);
 
-/** The note's content, built once: the text, the button, and a line for errors. */
 function accessNote(note, info) {
   if (note.querySelector('[data-allow]')) return;
   note.classList.add('notice-action');
@@ -55,7 +52,6 @@ function showNotice(info, error = '') {
   const { reason, needsAccess } = info;
   const waiting = !reason && needsAccess && !error.startsWith('Allowed');
   document.documentElement.classList.toggle('needs-access', waiting);
-  // Faded out, and out of reach of the keyboard too.
   for (const el of $$('.welcome .step-actions')) el.inert = waiting;
 
   for (const wrap of $$('[data-unsupported]')) {

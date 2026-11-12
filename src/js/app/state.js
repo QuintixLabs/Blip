@@ -1,7 +1,6 @@
 // ============================================================
 // state.js
 // The settings the window shows, and saving them.
-// Every page and component reads from here.
 // ============================================================
 
 export const { invoke } = window.__TAURI__.core;
@@ -19,7 +18,6 @@ export const app = { state: null };
 
 const renderers = [];
 
-/** Pages and components register how to redraw themselves when anything changes. */
 export function onRender(fn) {
   renderers.push(fn);
 }
@@ -41,7 +39,6 @@ export async function load() {
   render();
 }
 
-/** Saves a change. Shows the error in the status line if it can't. */
 export async function save(patch) {
   try {
     app.state = await invoke('save_settings', { settings: { ...app.state.settings, ...patch } });

@@ -1,6 +1,6 @@
 // ============================================================
 // sidebar.js
-// The sidebar: switching pages and collapsing it to icons.
+// The sidebar: switching pages and folding it to icons.
 // ============================================================
 
 import { $, $$, status } from '../state.js';
@@ -11,7 +11,6 @@ const root = document.documentElement;
 // Pages
 // ------------------------------------------------------------
 
-/** Shows a page: "welcome", "blip" or "settings". */
 export function show(page) {
   status();
   root.classList.toggle('is-welcome', page === 'welcome');

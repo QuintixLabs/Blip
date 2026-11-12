@@ -1,9 +1,7 @@
 // ============================================================
 // try-box.js
-// "Click here to see your blip" on the welcome screen. Real blips
-// only start once the welcome screen is done, so this box plays
-// one itself: same shape, color, sizes, opacity and timing as the
-// real thing (see blip/style.rs).
+// "Click here to see your blip" on the welcome screen. It plays a blip
+// itself, since real blips only start after the welcome screen.
 // ============================================================
 
 import { $, app, onRender } from '../state.js';

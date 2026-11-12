@@ -1,7 +1,7 @@
 // ============================================================
 // settings.js
-// Switches and choices (on every page), the reset button, the
-// settings folder and the links at the bottom of Settings.
+// Switches and choices (used on every page), Reset, the settings folder
+// and the links.
 // ============================================================
 
 import { $, $$, app, invoke, onRender, render, save, status } from '../state.js';

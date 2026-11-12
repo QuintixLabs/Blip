@@ -1,7 +1,6 @@
 /* ============================================================
    colors.css
-   The color dots: ready colors and Custom (welcome screen and the
-   Blip page).
+   The color dots.
    ============================================================ */
 
 .swatches {
@@ -26,7 +25,6 @@
   transform: scale(1.08);
 }
 
-/* The chosen one: a ring around it, with a gap. */
 .swatch.is-active {
   box-shadow: inset 0 0 0 1px var(--line-strong), 0 0 0 2px var(--bg), 0 0 0 4px var(--accent);
 }

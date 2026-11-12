@@ -1,7 +1,6 @@
 // ============================================================
 // dialog.js
-// The "Are you sure?" box for Clear all and Reset, with its fade
-// in and out.
+// The "Are you sure?" box.
 // ============================================================
 
 import { $ } from '../state.js';
@@ -22,7 +21,6 @@ export function confirmAction({ title, text, action }) {
   });
 }
 
-/** Plays the fade-out, then really closes. Buttons and Esc both come through here. */
 function close(value) {
   if (dialog.classList.contains('is-closing')) return;
   dialog.classList.add('is-closing');

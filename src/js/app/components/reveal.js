@@ -1,11 +1,8 @@
 // ============================================================
 // reveal.js
-// Opens and closes notes and warnings smoothly (the motion itself
-// is in components/reveal.css). A closed one can't be reached with
-// the keyboard either.
+// Opens and closes notes and warnings smoothly (the motion is in reveal.css).
 // ============================================================
 
-/** Opens or closes a `.reveal`. `animate: false` puts it in place at once. */
 export function reveal(el, open, { animate = true } = {}) {
   if (!animate) {
     el.classList.add('no-transition');

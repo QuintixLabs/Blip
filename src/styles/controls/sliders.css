@@ -1,7 +1,6 @@
 /* ============================================================
    sliders.css
-   The sliders: a track that fills up to the thumb, and the value
-   next to it.
+   The sliders.
    ============================================================ */
 
 .slider {
@@ -28,7 +27,6 @@
   appearance: none;
 }
 
-/* The track fills up to the thumb with the accent color. */
 .slider input::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 999px;

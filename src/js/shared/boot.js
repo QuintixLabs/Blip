@@ -1,11 +1,10 @@
 // ============================================================
 // boot.js
-// Sets the theme and the sidebar before the window first appears,
-// so it never flashes the wrong one. The welcome screen has no sidebar.
+// Sets the theme and the sidebar before the window first appears, so it
+// never flashes the wrong one.
 // ============================================================
 
 // Loaded as a plain script in <head>, before anything is drawn.
-// components/theme.js and components/sidebar.js keep these saved values up to date.
 try {
   const root = document.documentElement;
   const theme = localStorage.getItem('blip.theme') ?? 'system';

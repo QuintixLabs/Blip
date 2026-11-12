@@ -1,7 +1,6 @@
 // ============================================================
 // sliders.js
-// The sliders (opacity, sizes, speed, fade): the number next to
-// each, and saving when you let go.
+// The sliders: the value next to each, saved when you let go.
 // ============================================================
 
 import { $$, onRender, save } from '../state.js';

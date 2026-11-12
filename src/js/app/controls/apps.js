@@ -1,10 +1,6 @@
 // ============================================================
 // apps.js
-// "Show on → Apps": the apps where blips never show. The chips under
-// the row list them (click a name to see it in its folder); "Choose
-// apps" opens a list of the installed apps (with Browse for the rest).
-// Only each app's name and file name are saved, never where it's
-// installed.
+// Show on → Apps: the chips under the row and the Choose apps dialog.
 // ============================================================
 
 import { $, $$, app, invoke, onRender, save } from '../state.js';
@@ -17,12 +13,10 @@ const filters = $('#apps-filters');
 const chipsWrap = $('#app-chips-wrap');
 const chips = $('#app-chips');
 
-/** Icons and program paths by file name, from the last look at the apps. Never saved. */
+/** By file name. Never saved. */
 const icons = new Map();
 const paths = new Map();
-/** What the dialog lists: every app found, plus skipped ones that weren't. */
 let shown = [];
-/** The apps found, once looked up (the lookup starts when the window opens). */
 let found = null;
 /** File names of the apps Blip found itself; the rest were picked with Browse. */
 let foundExes = new Set();
@@ -43,7 +37,7 @@ const skipped = () => app.state.settings.skipApps;
 let draft = [];
 const isTicked = (exe) => draft.some((a) => a.exe === exe);
 const isBrowsed = (exe) => !foundExes.has(exe);
-/** Which apps the list shows: "all", "skipped" (ticked) or "browsed" (picked with Browse). */
+/** "all", "skipped" or "browsed". */
 let view = 'all';
 
 const escape = (text) => text.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -64,8 +58,7 @@ function remember(apps) {
 // Chips under the row
 // ------------------------------------------------------------
 
-// Each chip is kept and only added or removed on its own, so a removed one
-// can fade out instead of the whole row redrawing.
+// Chips are added and removed one by one, so a removed one can fade out.
 
 let chipsShown = false; // the page as it opens: no animation
 
@@ -175,10 +168,8 @@ function renderChips(state) {
       chip = makeChip(a);
       chips.append(chip);
     } else if (icons.has(a.exe) && !chip.querySelector('img')) {
-      // Its icon arrived after the chip was made.
       chip.querySelector('.app-icon').outerHTML = iconHtml(a.exe);
     }
-    // Its name opens its folder, when Blip knows where it is.
     chip.classList.toggle('has-folder', paths.has(a.exe));
   }
   chipsShown = true;
@@ -221,7 +212,6 @@ function renderList() {
   list.innerHTML = matches.map(row).join('');
 }
 
-/** The filter row: which one is on, how many are skipped, and Browsed only when there are some. */
 function updateFilters() {
   const browsed = shown.some((a) => isBrowsed(a.exe));
   if (view === 'browsed' && !browsed) view = 'all';
@@ -242,7 +232,6 @@ filters.addEventListener('click', (e) => {
   list.scrollTop = 0;
 });
 
-/** Every app found, plus skipped ones that weren't, by name. */
 function arrange(apps) {
   const extra = skipped().filter((s) => !apps.some((r) => r.exe === s.exe));
   return [...apps, ...extra].sort((a, b) => a.name.localeCompare(b.name));
@@ -281,7 +270,6 @@ list.addEventListener('click', (e) => {
   if (item) toggle(item);
 });
 
-// The rows tick with Space or Enter too.
 list.addEventListener('keydown', (e) => {
   const item = e.target.closest('.app-item');
   if (item && e.target === item && (e.key === ' ' || e.key === 'Enter')) {
@@ -295,7 +283,6 @@ search.addEventListener('input', renderList);
 search.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') e.preventDefault();
 });
-// Clicking anywhere on the box puts you in the search.
 dialog.querySelector('.apps-search').addEventListener('mousedown', (e) => {
   if (e.target !== search) {
     e.preventDefault();
@@ -315,7 +302,6 @@ $('#apps-browse').addEventListener('click', async () => {
 
 $('#choose-apps').addEventListener('click', open);
 
-/** Plays the fade-out, then really closes (like the confirm box). */
 function close() {
   if (dialog.classList.contains('is-closing')) return;
   dialog.classList.add('is-closing');
@@ -334,7 +320,6 @@ dialog.addEventListener('cancel', (e) => {
   close();
 });
 
-// Looked up quietly once the window is up, so the list opens straight away and
-// the chips get their icons and folders.
+// Looked up early, so the list opens straight away.
 onRender(renderChips);
 setTimeout(findApps, 400);

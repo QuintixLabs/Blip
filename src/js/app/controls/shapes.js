@@ -1,7 +1,6 @@
 // ============================================================
 // shapes.js
-// The shape buttons (circle, ring, square…) on the welcome screen
-// and the Blip page.
+// The shape buttons.
 // ============================================================
 
 import { $$, onRender, save } from '../state.js';

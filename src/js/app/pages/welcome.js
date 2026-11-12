@@ -1,7 +1,6 @@
 // ============================================================
 // welcome.js
-// The welcome screen on first launch: hello, make it yours,
-// you're all set.
+// The welcome screen: hello, make it yours, you're all set.
 // ============================================================
 
 import { $, $$, save, status } from '../state.js';
@@ -20,7 +19,6 @@ let changingUntil = 0; // Next and Back ignore clicks until then, so a double-cl
 const stepEl = (n) => $(`.step[data-step="${n}"]`);
 const shownStep = () => $$('.step').find((el) => !el.hidden);
 
-/** Puts step `n` on screen straight away: its layout, buttons and dots. */
 function apply(n) {
   $('#welcome').classList.toggle('is-intro', n === 0);
   for (const el of $$('.step')) {
@@ -33,12 +31,7 @@ function apply(n) {
   $('#next').textContent = NEXT_LABELS[n];
 }
 
-/**
- * Shows step 0, 1 or 2. The old step quickly fades out, then the new one fades
- * in, sliding a little in the direction you're going. The two never show
- * together. The buttons and dots sit right under each step, so they fade out
- * and back in with it instead of jumping.
- */
+/** The old step fades out, then the new one fades in, sliding the way you're going. */
 export function goStep(n) {
   status();
   const from = step;

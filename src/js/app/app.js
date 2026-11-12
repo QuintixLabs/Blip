@@ -1,12 +1,11 @@
 // ============================================================
 // app.js
-// Starts the window: loads your settings, then opens the right page.
+// Starts the window: loads the settings, then opens the right page.
 // ============================================================
 
 import '../shared/native.js';
 import { app, listen, load } from './state.js';
 
-// Each of these sets itself up and redraws when settings change.
 // The theme goes first, so the page is in the right colors from the start.
 import './components/theme.js';
 import './components/dialog.js';

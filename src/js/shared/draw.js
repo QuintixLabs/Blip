@@ -1,8 +1,7 @@
 // ============================================================
 // draw.js
-// The blip shapes: small drawings for the shape buttons, drawing
-// a blip on a canvas (the welcome try box), and telling light
-// colors from dark ones.
+// The blip shapes: their button drawings, drawing one on a canvas, and
+// telling light colors from dark.
 // ============================================================
 
 /** Each shape as a small drawing for its button: [name, svg inside a 16×16 box]. */
@@ -42,7 +41,6 @@ export function drawShape(g, shape, color, x, y, size) {
   g.fill();
 }
 
-/** How bright a color looks, 0 (black) to 1 (white). */
 export function brightness(hex) {
   const n = parseInt(hex.slice(1), 16);
   const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];

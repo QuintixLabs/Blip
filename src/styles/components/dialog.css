@@ -1,7 +1,6 @@
 /* ============================================================
    dialog.css
-   The "Are you sure?" box (Clear all, Reset), with its fade in
-   and out.
+   The "Are you sure?" box.
    ============================================================ */
 
 .dialog {
@@ -21,7 +20,6 @@
   background: var(--backdrop);
 }
 
-/* Fades in on open and out on close (see components/dialog.js). */
 .dialog[open],
 .dialog[open]::backdrop {
   animation: fade 160ms ease-out;

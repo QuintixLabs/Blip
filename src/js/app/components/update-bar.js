@@ -1,7 +1,6 @@
 // ============================================================
 // update-bar.js
-// Updates in the window: the "Check for updates" button and the
-// "Restart to update now?" bar.
+// The "Check for updates" button and the "Restart to update now?" bar.
 // ============================================================
 
 import { $, invoke, listen } from '../state.js';
@@ -41,7 +40,6 @@ const TEXT = {
   error: "Couldn't check for updates",
 };
 
-/** Cross-fades the button to a new state (the CSS shows the spinner or check for it). */
 async function setState(state, text = TEXT[state]) {
   const content = button.querySelector('.update-content');
   content.classList.add('is-swapping');
