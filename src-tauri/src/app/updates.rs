@@ -105,11 +105,15 @@ pub fn start_auto(app: &AppHandle, delay: Duration) {
     let app = app.clone();
     thread::spawn(move || {
         thread::sleep(delay);
+        // Once at every start, then every few hours while Blip keeps running.
+        let mut first = true;
         loop {
             let data = app.state::<Store>().get();
-            if data.settings.auto_update && settings::now_ms().saturating_sub(data.last_update_check) >= CHECK_EVERY_MS {
+            let due = first || settings::now_ms().saturating_sub(data.last_update_check) >= CHECK_EVERY_MS;
+            if data.settings.auto_update && due {
                 auto_update(&app);
             }
+            first = false;
             thread::sleep(LOOP_EVERY);
         }
     });
@@ -211,6 +215,14 @@ fn status(app: &AppHandle, text: Option<&str>) {
 }
 
 /// A downloaded update waiting to install, so a newly opened window can show its bar.
+/// "Update automatically" switched off: a downloaded update waiting to install is
+/// dropped, so Blip stays on this version.
+pub fn cancel(app: &AppHandle) {
+    if app.state::<Pending>().ready.lock().unwrap().take().is_some() {
+        let _ = app.emit("update-cancelled", ());
+    }
+}
+
 pub fn ready_version(app: &AppHandle) -> Option<String> {
     app.state::<Pending>().ready.lock().unwrap().as_ref().map(|(update, _)| update.version.clone())
 }

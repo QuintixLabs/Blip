@@ -37,6 +37,9 @@ pub async fn save_settings(app: AppHandle, store: State<'_, Store>, settings: Se
     if settings.theme != previous.theme {
         main_window::apply_theme(&app, &settings.theme);
     }
+    if previous.auto_update && !settings.auto_update {
+        updates::cancel(&app);
+    }
     let data = store.update(&app, |data| data.settings = settings);
     blip::apply(&data.settings);
     Ok(data)
