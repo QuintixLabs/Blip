@@ -28,7 +28,7 @@ pub fn unsupported_reason() -> Option<String> {
 }
 
 pub fn features() -> Features {
-    Features { text: false, links: false, taskbar: true, games: false, apps: true }
+    Features { text: true, links: true, taskbar: true, games: false, apps: true }
 }
 
 pub fn needs_access() -> bool {

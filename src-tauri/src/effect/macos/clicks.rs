@@ -8,14 +8,14 @@ use std::{
     cell::RefCell,
     ffi::{c_void, CStr},
     ptr::NonNull,
-    sync::atomic::Ordering,
+    sync::{atomic::Ordering, OnceLock},
     thread,
     time::Duration,
 };
 
 use block2::RcBlock;
 use dispatch2::DispatchQueue;
-use objc2_app_kit::{NSEvent, NSEventMask};
+use objc2_app_kit::{NSCursor, NSEvent, NSEventMask};
 
 use super::ffi::*;
 use crate::effect::Button;
@@ -124,13 +124,58 @@ fn handle(kind: u32, at: CGPoint, other: i64) {
         _ => return,
     };
     if down {
-        PRESS.with(|p| p.borrow_mut()[button as usize] = Some(Press { at, skip: false }));
+        // The cursor is looked at as the button goes down, like on the other systems.
+        let rules = crate::effect::rules();
+        let skip = (rules.text_cursor || rules.link_cursor)
+            && match cursor_now() {
+                Some(Cursor::Text) => rules.text_cursor,
+                Some(Cursor::Link) => rules.link_cursor,
+                None => false,
+            };
+        PRESS.with(|p| p.borrow_mut()[button as usize] = Some(Press { at, skip }));
     } else if let Some(press) = PRESS.with(|p| p.borrow_mut()[button as usize].take()) {
         let (dx, dy) = (at.x - press.at.x, at.y - press.at.y);
         if !press.skip && (dx * dx + dy * dy).sqrt() <= DRAG_PT && !skipped_at(at) {
             DispatchQueue::main().exec_async(move || super::overlay::play(at, button));
         }
     }
+}
+
+// ------------------------------------------------------------
+// The rules: the text cursor and links
+// ------------------------------------------------------------
+
+enum Cursor {
+    Text,
+    Link,
+}
+
+/// A cursor's size and hot spot (the point that clicks), in points.
+type Shape = (f64, f64, f64, f64);
+
+fn shape_of(cursor: &NSCursor) -> Shape {
+    let (size, spot) = (cursor.image().size(), cursor.hotSpot());
+    (size.width, size.height, spot.x, spot.y)
+}
+
+/// The cursor on screen right now, from any app. Apps show text and links with
+/// the system's own cursors, so a cursor with the same size and hot spot as
+/// those is one of them.
+#[allow(deprecated)] // still the only way to see another app's cursor
+fn cursor_now() -> Option<Cursor> {
+    static KNOWN: OnceLock<[(Shape, bool); 3]> = OnceLock::new();
+    let known = KNOWN.get_or_init(|| {
+        [
+            (shape_of(&NSCursor::IBeamCursor()), true),
+            (shape_of(&NSCursor::IBeamCursorForVerticalLayout()), true),
+            (shape_of(&NSCursor::pointingHandCursor()), false),
+        ]
+    });
+    let now = shape_of(&*NSCursor::currentSystemCursor()?);
+    if std::env::var_os("BLIP_DEBUG").is_some() {
+        eprintln!("Blip: cursor {now:?} (text {:?}, link {:?})", known[0].0, known[2].0);
+    }
+    known.iter().find(|(shape, _)| *shape == now).map(|(_, text)| if *text { Cursor::Text } else { Cursor::Link })
 }
 
 // ------------------------------------------------------------
