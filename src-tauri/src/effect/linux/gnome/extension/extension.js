@@ -14,11 +14,12 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const BUS = 'com.quintixlabs.blip.Gnome';
-// Blip's numbers for the buttons: 0 left, 1 right, 2 middle.
+// Blip's numbers for the buttons: 0 left, 1 right, 2 middle. On Wayland,
+// GNOME marks the right button as BUTTON2 and the middle as BUTTON3.
 const BUTTONS = [
   [Clutter.ModifierType.BUTTON1_MASK, 0],
-  [Clutter.ModifierType.BUTTON3_MASK, 1],
-  [Clutter.ModifierType.BUTTON2_MASK, 2],
+  [Clutter.ModifierType.BUTTON2_MASK, 1],
+  [Clutter.ModifierType.BUTTON3_MASK, 2],
 ];
 /** Moving further than this (px) while held is a drag. */
 const DRAG = 8;
