@@ -7,6 +7,13 @@
 ; the new Blip goes in, close the old one so there aren't two blips per click,
 ; and remove it with its own uninstaller.
 !macro NSIS_HOOK_PREINSTALL
+  ; Up to 2.2.0 the program was blip.exe. Windows keeps a file's old name when
+  ; it's replaced, so rename it first and the update lands as Blip.exe. Start
+  ; with computer and shortcuts still find it: Windows paths ignore case.
+  ${If} ${FileExists} "$INSTDIR\blip.exe"
+    Rename "$INSTDIR\blip.exe" "$INSTDIR\Blip.exe"
+  ${EndIf}
+
   Push $0
   Push $1
   SetShellVarContext current
