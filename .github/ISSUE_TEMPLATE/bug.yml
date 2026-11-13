@@ -10,8 +10,6 @@ body:
       options:
         - label: I have searched the existing open and closed issues.
           required: true
-        - label: I'm using the latest version of Blip.
-          required: false
 
   - type: input
     id: system
@@ -26,7 +24,7 @@ body:
     id: version
     attributes:
       label: Blip version
-      description: Find it at the bottom of Blip's Settings.
+      description: Find it at the bottom of Blip's Settings. If it's not the latest, update first and check if the bug is still there.
       placeholder: "2.2.0"
     validations:
       required: true
