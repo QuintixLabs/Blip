@@ -1,6 +1,6 @@
 [package]
 name = "blip"
-version = "2.2.0"
+version = "2.2.1"
 description = "Lightweight tool that adds smooth blip effects to your clicks"
 authors = ["Quintix"]
 license = "GPL-3.0"
