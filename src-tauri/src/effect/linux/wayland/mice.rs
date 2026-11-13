@@ -49,8 +49,16 @@ pub fn count() -> (usize, usize) {
     (readable, blocked)
 }
 
+/// Touchpads say where the finger is, and taps on them only become clicks in
+/// libinput, so they go to touchpads.rs.
+fn is_touchpad(device: &Device) -> bool {
+    device.supported_keys().is_some_and(|keys| keys.contains(KeyCode::BTN_TOOL_FINGER))
+        && device.supported_absolute_axes().is_some_and(|axes| axes.contains(AbsoluteAxisCode::ABS_X))
+}
+
 pub fn watch(events: Sender<Input>) {
     let open: Arc<Mutex<HashSet<PathBuf>>> = Arc::default();
+    let touchpads = super::touchpads::start(events.clone(), open.clone());
     thread::Builder::new()
         .name("mice".into())
         .spawn(move || loop {
@@ -63,6 +71,11 @@ pub fn watch(events: Sender<Input>) {
                     continue;
                 }
                 open.lock().unwrap().insert(path.clone());
+                if let Some(touchpads) = touchpads.as_ref().filter(|_| is_touchpad(&device)) {
+                    drop(device);
+                    let _ = touchpads.send(path);
+                    continue;
+                }
                 eprintln!("Blip: reading clicks from {}", device.name().unwrap_or("a mouse"));
                 let (open, events) = (open.clone(), events.clone());
                 let _ = thread::Builder::new().name("mouse".into()).spawn(move || {

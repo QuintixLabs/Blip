@@ -9,6 +9,7 @@ mod hyprland;
 mod kde;
 mod mice;
 mod overlay;
+mod touchpads;
 
 use std::{
     path::PathBuf,
