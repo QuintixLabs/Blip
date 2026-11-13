@@ -11,6 +11,24 @@ body:
         - label: I have searched the existing open and closed issues.
           required: true
 
+  - type: input
+    id: system
+    attributes:
+      label: Your system
+      description: Which system and version you use. On Linux, add your desktop (like KDE or GNOME) and whether it's X11 or Wayland.
+      placeholder: "Windows 11 · Ubuntu 24.04, KDE, Wayland · macOS 15"
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Blip version
+      description: Find it at the bottom of Blip's Settings.
+      placeholder: "2.2.0"
+    validations:
+      required: true
+
   - type: textarea
     id: desc
     attributes:
@@ -34,6 +52,15 @@ body:
       description: "A clear and concise description of what you expected to happen."
     validations:
       required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Terminal output
+      description: If you started Blip from a terminal, paste what it printed. It often shows what went wrong.
+      render: shell
+    validations:
+      required: false
 
   - type: textarea
     id: logs
