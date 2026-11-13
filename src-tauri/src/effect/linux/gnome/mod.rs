@@ -116,16 +116,6 @@ fn gsettings(args: &[&str]) -> Option<String> {
     out.status.success().then(|| String::from_utf8_lossy(&out.stdout).trim().to_owned())
 }
 
-/// Turned on for GNOME, even if it only starts at the next login.
-fn turned_on() -> bool {
-    gsettings(&["get", "org.gnome.shell", "enabled-extensions"]).is_some_and(|list| list.contains(UUID))
-        && gsettings(&["get", "org.gnome.shell", "disable-user-extensions"]).as_deref() != Some("true")
-}
-
-pub fn waiting_for_login() -> bool {
-    turned_on() && !running()
-}
-
 /// The Set up button: installs the extension and turns it on.
 pub fn set_up() -> Result<(), String> {
     if !install() {

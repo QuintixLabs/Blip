@@ -96,15 +96,8 @@ pub fn needs_access() -> bool {
 
 pub fn access_prompt() -> super::AccessPrompt {
     if session() == Session::Gnome {
-        if gnome::waiting_for_login() {
-            return super::AccessPrompt {
-                text: "Almost done: log out and back in once, and blips start.",
-                button: "Set up again",
-                waits: false,
-            };
-        }
         return super::AccessPrompt {
-            text: "On GNOME, blips are drawn by a small GNOME Shell extension that comes with Blip. No password needed.",
+            text: "Blip needs a quick one-time setup on GNOME. Click Set up, then log out and back in.",
             button: "Set up",
             waits: false,
         };
