@@ -23,6 +23,7 @@
 .icon-folder { --icon: url("../../assets/icons/general/folder.svg"); }
 .icon-rotate-ccw { --icon: url("../../assets/icons/general/rotate-ccw.svg"); }
 .icon-search { --icon: url("../../assets/icons/general/search.svg"); }
+.icon-spinner { --icon: url("../../assets/icons/general/spinner.svg"); }
 .icon-x { --icon: url("../../assets/icons/general/x.svg"); }
 
 /* ------------------------------------------------------------
