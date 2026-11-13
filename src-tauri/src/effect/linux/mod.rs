@@ -70,6 +70,8 @@ pub fn features() -> Features {
         Session::Kde => Features { text: false, links: false, taskbar: true, games: false, apps: true },
         // The extension knows the window under the cursor, and GNOME's top bar and overview.
         Session::Gnome => Features { text: false, links: false, taskbar: true, games: false, apps: true },
+        // Hyprland lists the windows and the bars, with where they are.
+        Session::Hyprland => Features { text: false, links: false, taskbar: true, games: false, apps: true },
         _ => Features { text: false, links: false, taskbar: false, games: false, apps: false },
     }
 }
