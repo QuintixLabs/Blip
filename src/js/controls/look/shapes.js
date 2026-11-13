@@ -4,14 +4,16 @@
 // ============================================================
 
 import { $$, onRender, save } from '../../core/state.js';
-import { SHAPES } from './draw.js';
+
+/** Each one's drawing is assets/icons/shapes/<value>.svg. */
+const SHAPES = { circle: 'Circle', ring: 'Ring', square: 'Square', hexagon: 'Hexagon', diamond: 'Diamond' };
 
 function render(state) {
   for (const el of $$('[data-shapes]')) {
     el.innerHTML = Object.entries(SHAPES)
-      .map(([value, [name, art]]) => {
+      .map(([value, name]) => {
         const active = value === state.settings.shape ? 'is-active' : '';
-        return `<button class="${active}" data-value="${value}" title="${name}" aria-label="${name}"><svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">${art}</svg></button>`;
+        return `<button class="${active}" data-value="${value}" title="${name}" aria-label="${name}"><i class="icon icon-shape-${value}"></i></button>`;
       })
       .join('');
   }

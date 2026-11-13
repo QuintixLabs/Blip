@@ -14,26 +14,51 @@
 }
 
 /* ------------------------------------------------------------
-   Interface (assets/icons/ui)
+   General (assets/icons/general)
    ------------------------------------------------------------ */
 
-.icon-app { --icon: url("../../assets/icons/ui/app-window.svg"); }
-.icon-alert { --icon: url("../../assets/icons/ui/alert.svg"); }
-.icon-check { --icon: url("../../assets/icons/ui/check.svg"); }
-.icon-click { --icon: url("../../assets/icons/ui/click.svg"); }
-.icon-dark { --icon: url("../../assets/icons/ui/dark.svg"); }
-.icon-folder { --icon: url("../../assets/icons/ui/folder.svg"); }
-.icon-light { --icon: url("../../assets/icons/ui/light.svg"); }
-.icon-mouse-left { --icon: url("../../assets/icons/ui/mouse-left-click.svg"); }
-.icon-mouse-middle { --icon: url("../../assets/icons/ui/mouse-middle-click.svg"); }
-.icon-mouse-right { --icon: url("../../assets/icons/ui/mouse-right-click.svg"); }
-.icon-search { --icon: url("../../assets/icons/ui/search.svg"); }
-.icon-x { --icon: url("../../assets/icons/ui/x.svg"); }
-.icon-monitor { --icon: url("../../assets/icons/ui/monitor.svg"); }
-.icon-panel-close { --icon: url("../../assets/icons/ui/panel-left-close.svg"); }
-.icon-panel-open { --icon: url("../../assets/icons/ui/panel-left-open.svg"); }
-.icon-rotate-ccw { --icon: url("../../assets/icons/ui/rotate-ccw.svg"); }
-.icon-settings { --icon: url("../../assets/icons/ui/settings.svg"); }
+.icon-alert { --icon: url("../../assets/icons/general/alert.svg"); }
+.icon-app { --icon: url("../../assets/icons/general/app-window.svg"); }
+.icon-check { --icon: url("../../assets/icons/general/check.svg"); }
+.icon-folder { --icon: url("../../assets/icons/general/folder.svg"); }
+.icon-rotate-ccw { --icon: url("../../assets/icons/general/rotate-ccw.svg"); }
+.icon-search { --icon: url("../../assets/icons/general/search.svg"); }
+.icon-x { --icon: url("../../assets/icons/general/x.svg"); }
+
+/* ------------------------------------------------------------
+   Mouse (assets/icons/mouse)
+   ------------------------------------------------------------ */
+
+.icon-click { --icon: url("../../assets/icons/mouse/click.svg"); }
+.icon-mouse-left { --icon: url("../../assets/icons/mouse/left-click.svg"); }
+.icon-mouse-middle { --icon: url("../../assets/icons/mouse/middle-click.svg"); }
+.icon-mouse-right { --icon: url("../../assets/icons/mouse/right-click.svg"); }
+
+/* ------------------------------------------------------------
+   Blip shapes (assets/icons/shapes)
+   ------------------------------------------------------------ */
+
+.icon-shape-circle { --icon: url("../../assets/icons/shapes/circle.svg"); }
+.icon-shape-ring { --icon: url("../../assets/icons/shapes/ring.svg"); }
+.icon-shape-square { --icon: url("../../assets/icons/shapes/square.svg"); }
+.icon-shape-hexagon { --icon: url("../../assets/icons/shapes/hexagon.svg"); }
+.icon-shape-diamond { --icon: url("../../assets/icons/shapes/diamond.svg"); }
+
+/* ------------------------------------------------------------
+   Sidebar (assets/icons/sidebar)
+   ------------------------------------------------------------ */
+
+.icon-panel-close { --icon: url("../../assets/icons/sidebar/panel-left-close.svg"); }
+.icon-panel-open { --icon: url("../../assets/icons/sidebar/panel-left-open.svg"); }
+.icon-settings { --icon: url("../../assets/icons/sidebar/settings.svg"); }
+
+/* ------------------------------------------------------------
+   Theme (assets/icons/theme)
+   ------------------------------------------------------------ */
+
+.icon-dark { --icon: url("../../assets/icons/theme/dark.svg"); }
+.icon-light { --icon: url("../../assets/icons/theme/light.svg"); }
+.icon-monitor { --icon: url("../../assets/icons/theme/monitor.svg"); }
 
 /* ------------------------------------------------------------
    Footer (assets/icons/footer)
