@@ -11,6 +11,7 @@ export const paths = new Map();
 /** The file each browsed app was picked from: what's saved for it. */
 export const picks = new Map();
 let found = null;
+let picked = null;
 /** File names of the apps Blip found itself; the rest were picked with Browse. */
 let foundExes = new Set();
 
@@ -21,18 +22,22 @@ export function findApps() {
   found ??= invoke('list_apps').then(async (apps) => {
     remember(apps);
     foundExes = new Set(apps.map((a) => a.exe));
-    await findBrowsed();
+    await findPicked();
     return apps;
   });
   return found;
 }
 
-/** Browsed apps aren't in the list, so their icons are read again from where they were picked. */
-async function findBrowsed() {
-  const browsed = skipped().filter((a) => a.path && !foundExes.has(a.exe));
-  for (const a of browsed) picks.set(a.exe, a.path);
-  const infos = await Promise.all(browsed.map((a) => invoke('app_info', { path: a.path }).catch(() => null)));
-  remember(infos.filter(Boolean));
+/** Browsed apps aren't in the list, so their icons are read again from where
+ *  they were picked. That's quick, so it doesn't wait for the list. */
+export function findPicked() {
+  picked ??= (async () => {
+    const browsed = skipped().filter((a) => a.path);
+    for (const a of browsed) picks.set(a.exe, a.path);
+    const infos = await Promise.all(browsed.map((a) => invoke('app_info', { path: a.path }).catch(() => null)));
+    remember(infos.filter(Boolean));
+  })();
+  return picked;
 }
 
 export function remember(apps) {

@@ -5,7 +5,7 @@
 
 import { $, app, invoke, onRender, save } from '../../core/state.js';
 import { reveal } from '../../window/reveal.js';
-import { escape, findApps, icons, iconHtml, paths, skipped } from './apps.js';
+import { escape, findApps, findPicked, icons, iconHtml, paths, skipped } from './apps.js';
 
 const chipsWrap = $('#app-chips-wrap');
 const chips = $('#app-chips');
@@ -145,4 +145,10 @@ chips.addEventListener('click', (e) => {
 
 // Looked up early, so the list opens straight away.
 onRender(renderChips);
+let pickedAsked = false;
+onRender(() => {
+  if (pickedAsked) return;
+  pickedAsked = true;
+  findPicked().then(() => renderChips(app.state));
+});
 setTimeout(() => findApps().then(() => renderChips(app.state)), 400);
