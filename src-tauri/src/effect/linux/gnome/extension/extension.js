@@ -1,7 +1,8 @@
 // ============================================================
 // effect/linux/gnome/extension/extension.js
 // Runs inside GNOME Shell: notices clicks, asks Blip whether each one
-// gets a blip and how it looks, then draws it.
+// gets a blip and how it looks, then draws it. Once Blip is uninstalled,
+// removes itself at the next login.
 // ============================================================
 
 import Cairo from 'cairo';
@@ -26,8 +27,43 @@ const DRAG = 8;
 /** How often the buttons are checked (ms), only while Blip is running. */
 const POLL_MS = 6;
 
+// ------------------------------------------------------------
+// After Blip is uninstalled
+// ------------------------------------------------------------
+
+/** Blip saves where it is next to this file. True when that's gone. */
+function blipGone(folder) {
+  try {
+    const [, bytes] = GLib.file_get_contents(GLib.build_filenamev([folder, 'blip-path']));
+    const program = new TextDecoder().decode(bytes).trim();
+    return program !== '' && !GLib.file_test(program, GLib.FileTest.EXISTS);
+  } catch {
+    return false; // not saved (yet): leave everything as it is
+  }
+}
+
+/** Takes this extension off GNOME's list and removes its files. */
+function cleanUp(uuid, folder) {
+  if (Gio.SettingsSchemaSource.get_default().lookup('org.gnome.shell', true)) {
+    const shell = new Gio.Settings({ schema_id: 'org.gnome.shell' });
+    shell.set_strv('enabled-extensions', shell.get_strv('enabled-extensions').filter((id) => id !== uuid));
+  }
+  for (const name of ['metadata.json', 'extension.js', 'blip-path']) {
+    try {
+      Gio.File.new_for_path(GLib.build_filenamev([folder, name])).delete(null);
+    } catch {}
+  }
+  try {
+    Gio.File.new_for_path(folder).delete(null);
+  } catch {}
+}
+
 export default class BlipExtension extends Extension {
   enable() {
+    if (blipGone(this.path)) {
+      cleanUp(this.uuid, this.path);
+      return;
+    }
     this._held = [null, null, null];
     this._blips = new Set();
     this._timer = 0;
@@ -35,7 +71,9 @@ export default class BlipExtension extends Extension {
   }
 
   disable() {
+    if (!this._watch) return;
     Gio.bus_unwatch_name(this._watch);
+    this._watch = 0;
     this._stop();
     for (const blip of this._blips) blip.destroy();
     this._blips.clear();
