@@ -13,7 +13,7 @@ use std::{
     time::Duration,
 };
 
-use evdev::{Device, EventSummary, KeyCode, RelativeAxisCode};
+use evdev::{AbsoluteAxisCode, Device, EventSummary, KeyCode, RelativeAxisCode};
 
 use crate::effect::Button;
 
@@ -75,11 +75,35 @@ pub fn watch(events: Sender<Input>) {
         .ok();
 }
 
+/// Touchpads, tablets and virtual machines' mice say where they are instead of
+/// how far they moved. Their whole width counts as this many mouse units.
+const ABS_SPAN: i64 = 4000;
+
 fn read(mut device: Device, events: &Sender<Input>) {
+    let range = |axis: AbsoluteAxisCode| {
+        device.get_absinfo().ok()?.find(|(code, _)| *code == axis).map(|(_, info)| (info.maximum() - info.minimum()).max(1) as i64)
+    };
+    let ranges = [range(AbsoluteAxisCode::ABS_X), range(AbsoluteAxisCode::ABS_Y)];
+    // The last position on each axis; forgotten when the finger lifts.
+    let mut last: [Option<i32>; 2] = [None, None];
     loop {
         let Ok(batch) = device.fetch_events() else { return };
         for event in batch {
             let input = match event.destructure() {
+                EventSummary::Key(_, KeyCode::BTN_TOUCH, 0) => {
+                    last = [None, None];
+                    continue;
+                }
+                EventSummary::AbsoluteAxis(_, axis @ (AbsoluteAxisCode::ABS_X | AbsoluteAxisCode::ABS_Y), value) => {
+                    let i = usize::from(axis == AbsoluteAxisCode::ABS_Y);
+                    let Some(span) = ranges[i] else { continue };
+                    let Some(before) = last[i].replace(value) else { continue };
+                    let moved = ((value - before) as i64 * ABS_SPAN / span) as i32;
+                    if moved == 0 {
+                        continue;
+                    }
+                    if i == 0 { Input::Moved(moved, 0) } else { Input::Moved(0, moved) }
+                }
                 EventSummary::Key(_, code, value) => {
                     let button = match code {
                         KeyCode::BTN_LEFT => Button::Left,
