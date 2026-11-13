@@ -97,7 +97,7 @@ pub fn needs_access() -> bool {
 pub fn access_prompt() -> super::AccessPrompt {
     if session() == Session::Gnome {
         return super::AccessPrompt {
-            text: "Blip needs a quick one-time setup on GNOME. Click Set up, then log out and back in.",
+            text: "Blip needs a quick one-time setup on GNOME. Click Set up.",
             button: "Set up",
             waits: false,
         };
