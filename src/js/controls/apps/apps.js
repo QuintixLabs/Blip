@@ -1,6 +1,6 @@
 // ============================================================
 // controls/apps/apps.js
-// Show on → Apps: finding the apps, and what's known about each.
+// Skip these apps: finding the apps.
 // ============================================================
 
 import { app, invoke } from '../../core/state.js';

@@ -1,7 +1,6 @@
 // ============================================================
 // tray/startup.rs
-// "Start with computer": Blip starts quietly in the tray when
-// you log in.
+// Start with computer: Blip waits in the tray at login.
 // ============================================================
 
 // Login starts carry the --autostart flag, so they never open a window.

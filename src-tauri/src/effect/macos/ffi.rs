@@ -1,7 +1,6 @@
 // ============================================================
 // effect/macos/ffi.rs
-// The parts of macOS Blip uses, by their C names (CoreGraphics and
-// CoreFoundation), with the numbers they expect.
+// The macOS functions Blip uses, by their C names.
 // ============================================================
 
 use std::ffi::c_void;

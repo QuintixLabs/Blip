@@ -1,7 +1,6 @@
 // ============================================================
 // window/logo.rs
-// Blip's logo for the title bar and the tray, and whether the
-// system is light or dark.
+// The logo in the title bar and the tray.
 // ============================================================
 
 // The logo (a dark circle with a bright ring) shows on light and dark

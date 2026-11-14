@@ -1,7 +1,6 @@
 // ============================================================
 // installed_apps/windows/sources.rs
-// Where apps are found: Start menu and desktop shortcuts, Steam and
-// Epic games, and windows open right now.
+// Where apps are found: Start menu, desktop, Steam, Epic and open windows.
 // ============================================================
 
 use std::{

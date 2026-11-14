@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/mod.rs
-// Turns mouse buttons into blips: asks the desktop where the cursor
-// is, checks the rules and shows the blip.
+// Wayland: turns mouse buttons into blips.
 // ============================================================
 
 pub(super) mod access;

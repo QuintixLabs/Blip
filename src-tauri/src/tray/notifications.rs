@@ -1,6 +1,6 @@
 // ============================================================
 // tray/notifications.rs
-// Blip's notifications ("Blip was updated", "Update available").
+// Blip's notifications.
 // ============================================================
 
 use tauri::{AppHandle, Manager};

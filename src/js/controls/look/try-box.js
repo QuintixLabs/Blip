@@ -1,7 +1,6 @@
 // ============================================================
 // controls/look/try-box.js
-// "Click here to see your blip" on the welcome screen. It plays a blip
-// itself, since real blips only start after the welcome screen.
+// The try box on the welcome screen: plays a blip itself.
 // ============================================================
 
 import { $, app, onRender } from '../../core/state.js';

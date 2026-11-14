@@ -1,6 +1,6 @@
 // ============================================================
 // effect/windows/clicks.rs
-// The mouse hook, and the rules that decide whether a click gets a blip.
+// The mouse hook, and the rules for each click.
 // ============================================================
 
 use std::cell::RefCell;

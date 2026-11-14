@@ -1,9 +1,6 @@
 // ============================================================
 // effect/linux/gnome/mod.rs
-// GNOME on Wayland: a small GNOME Shell extension (in extension/) sees
-// the clicks and draws the blips; Blip decides which clicks get one and
-// how it looks. No password, but GNOME loads a new extension only after
-// logging out and back in once.
+// GNOME: setting up and talking to the extension.
 // ============================================================
 
 use std::{collections::HashMap, path::PathBuf, process::Command, sync::OnceLock};

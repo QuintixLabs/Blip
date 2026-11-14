@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/overlay.rs
-// Wayland: each blip is a small surface on the layer above everything
-// (the layer shell), with no input area, so clicks go straight through.
+// Wayland: the see-through layer the blips play on.
 // ============================================================
 
 use std::{

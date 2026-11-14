@@ -1,6 +1,6 @@
 // ============================================================
 // main.rs
-// Starts Blip: the tray icon, the click watcher and the first window.
+// Starts Blip: the tray, the click watcher and the first window.
 // ============================================================
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]

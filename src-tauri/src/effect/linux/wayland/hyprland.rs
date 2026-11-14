@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/hyprland.rs
-// Hyprland: the clicks, where the cursor is and what's under it, all
-// from Hyprland's own sockets. No permission needed.
+// Hyprland: the clicks, the cursor and what's under it.
 // ============================================================
 
 use std::{

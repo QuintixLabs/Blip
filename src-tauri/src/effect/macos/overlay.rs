@@ -1,7 +1,6 @@
 // ============================================================
 // effect/macos/overlay.rs
-// macOS: the see-through windows the blips play in. They live on the
-// main thread, as macOS requires; a small ticker asks for each frame.
+// macOS: the see-through windows the blips play in.
 // ============================================================
 
 use std::{

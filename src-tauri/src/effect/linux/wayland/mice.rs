@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/mice.rs
-// Reads the mouse buttons from /dev/input, picking up new mice as
-// they're plugged in.
+// Reads the mouse buttons, including mice plugged in later.
 // ============================================================
 
 use std::{

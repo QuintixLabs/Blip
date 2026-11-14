@@ -1,6 +1,6 @@
 // ============================================================
 // tray/updates.rs
-// Checking for, downloading and installing new versions.
+// Updates: checking, downloading and installing.
 // ============================================================
 
 // Manual:     Settings -> Check for updates; installs right away and reopens.

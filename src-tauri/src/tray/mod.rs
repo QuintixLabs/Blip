@@ -1,6 +1,6 @@
 // ============================================================
 // tray/mod.rs
-// The tray icon and its menu: click opens or closes Blip, right-click shows the menu.
+// The tray icon and its menu.
 // ============================================================
 
 use tauri::{

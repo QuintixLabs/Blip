@@ -1,7 +1,6 @@
 // ============================================================
 // installed_apps/windows/mod.rs
-// Puts the list together: every source, without uninstallers and
-// helpers, one entry per program.
+// Puts the list together, one entry per program.
 // ============================================================
 
 mod icons;

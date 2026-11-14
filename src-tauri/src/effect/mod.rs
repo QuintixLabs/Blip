@@ -1,7 +1,6 @@
 // ============================================================
 // effect/mod.rs
-// The blip itself: a growing, fading shape wherever you click,
-// unless a rule says not to.
+// The blip itself, and the rules for when it shows.
 // ============================================================
 
 mod shape;

@@ -1,7 +1,6 @@
 // ============================================================
 // effect/macos/clicks.rs
-// macOS: hearing every button, and the rules (the menu bar and Dock,
-// skipped apps).
+// macOS: hearing the buttons, and the rules for each click.
 // ============================================================
 
 use std::{

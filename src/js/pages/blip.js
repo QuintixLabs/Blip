@@ -1,7 +1,6 @@
 // ============================================================
 // pages/blip.js
-// The Blip page: the taskbar warning, Reset to defaults, and the note
-// when blips can't work here or need the user's OK.
+// The Blip page: warnings, Reset and the setup note.
 // ============================================================
 
 import { $, $$, app, invoke, onRender, render, status } from '../core/state.js';

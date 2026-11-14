@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/access.rs
-// The permission to read mice and touchpads: a udev rule installed by the
-// .deb/.rpm or by the Allow button. Keyboards are never included.
+// The permission to read mice and touchpads (a udev rule).
 // ============================================================
 
 use std::{fs, path::Path, process::Command};

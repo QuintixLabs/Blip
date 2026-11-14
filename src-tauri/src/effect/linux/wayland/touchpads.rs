@@ -1,9 +1,6 @@
 // ============================================================
 // effect/linux/wayland/touchpads.rs
-// Touchpads, through libinput: the same library the desktop uses to
-// turn taps into clicks, set up like your touchpad settings, so taps
-// blip just as they click. libinput is opened while Blip runs; without
-// it, touchpads are read like mice (presses only, no taps).
+// Touchpads: taps and clicks, through libinput.
 // ============================================================
 
 use std::{

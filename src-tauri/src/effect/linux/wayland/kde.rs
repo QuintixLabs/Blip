@@ -1,7 +1,6 @@
 // ============================================================
 // effect/linux/wayland/kde.rs
-// KDE Plasma: where the cursor is, and what's under it. A tiny KWin
-// script reports both back to Blip over D-Bus.
+// KDE Plasma: where the cursor is and what's under it.
 // ============================================================
 
 use std::{

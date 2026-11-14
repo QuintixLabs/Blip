@@ -1,6 +1,6 @@
 // ============================================================
 // effect/windows/overlay.rs
-// The see-through windows the blips play in, one frame per screen refresh.
+// The see-through windows the blips play in.
 // ============================================================
 
 use std::{

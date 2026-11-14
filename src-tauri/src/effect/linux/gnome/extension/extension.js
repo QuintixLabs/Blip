@@ -1,8 +1,6 @@
 // ============================================================
 // effect/linux/gnome/extension/extension.js
-// Runs inside GNOME Shell: notices clicks, asks Blip whether each one
-// gets a blip and how it looks, then draws it. Once Blip is uninstalled,
-// removes itself at the next login.
+// The GNOME extension: sees the clicks and draws the blips.
 // ============================================================
 
 import Cairo from 'cairo';
