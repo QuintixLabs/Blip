@@ -30,4 +30,4 @@ LangString webview2DownloadSuccess ${LANG_ENGLISH} "WebView2 bootstrapper downlo
 LangString webview2Downloading ${LANG_ENGLISH} "Downloading WebView2 bootstrapper..."
 LangString webview2InstallError ${LANG_ENGLISH} "Error: Installing WebView2 failed with exit code $1"
 LangString webview2InstallSuccess ${LANG_ENGLISH} "WebView2 installed successfully"
-LangString deleteAppData ${LANG_ENGLISH} "Delete your settings and recent colors"
+LangString deleteAppData ${LANG_ENGLISH} "Delete your settings"
