@@ -38,8 +38,11 @@ fn main() {
             notifications::register(handle);
             tray::create(handle)?;
             effect::start(&settings);
-            // Keep the system's "start with computer" in step with the setting.
-            let _ = startup::set(handle, settings.start_with_computer);
+            // Keep the system's "start with computer" in step with the setting, pointing
+            // at this copy of Blip. Not from a dev build, which isn't the installed one.
+            if !cfg!(debug_assertions) {
+                let _ = startup::set(handle, settings.start_with_computer);
+            }
             open_on_start(handle);
             Ok(())
         })
