@@ -295,7 +295,7 @@ dependencies = [
 
 [[package]]
 name = "blip"
-version = "2.2.1"
+version = "2.2.2"
 dependencies = [
  "block2",
  "dark-light",
