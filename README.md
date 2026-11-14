@@ -13,7 +13,11 @@
 ## 📦 Installation
 
 ### 1. Download `🔘 Blip`
-Get it from the [Releases Page](https://github.com/QuintixLabs/Blip/releases/latest).
+Get it from the [Releases Page](https://github.com/QuintixLabs/Blip/releases/latest) for Windows, macOS or Linux. You can also use a package manager:
+
+| Platform | Command |
+|----------|---------|
+| Windows | `winget install QuintixLabs.Blip` |
 
 ### 2. Set it up
 Run it, and the welcome screen lets you pick a shape and a color before you start.
