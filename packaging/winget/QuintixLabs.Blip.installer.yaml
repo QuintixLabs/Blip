@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+
+PackageIdentifier: QuintixLabs.Blip
+PackageVersion: 2.2.2
+InstallerLocale: en-US
+InstallerType: nullsoft
+Scope: user
+InstallModes:
+- interactive
+- silent
+- silentWithProgress
+InstallerSwitches:
+  Upgrade: /UPDATE
+UpgradeBehavior: install
+ProductCode: Blip
+AppsAndFeaturesEntries:
+- DisplayName: Blip
+  Publisher: Quintix Labs
+  ProductCode: Blip
+Installers:
+- Architecture: x64
+  InstallerUrl: https://github.com/QuintixLabs/Blip/releases/download/v2.2.2/Blip_2.2.2_x64-setup.exe
+ManifestType: installer
+ManifestVersion: 1.10.0
